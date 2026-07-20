@@ -6,28 +6,26 @@
 <title>Analisador Lotofácil PRO</title>
 <style>
  body { background:#0A0A0A; color:white; font-family:Arial; margin:0; padding:0; }
-
- /* BOTAO MENU */
 .btnMenu { position:fixed; top:10px; left:10px; z-index:1000; font-size:28px; background:#9200D6; border:none; color:white; padding:8px 14px; border-radius:8px; cursor:pointer; }
-
- /* MENU LATERAL ESCONDIDO */
-.menu { position:fixed; left:-220px; top:0; width:200px; height:100%; background:#111; padding:15px; border-right:2px solid #9200D6; transition:0.3s; z-index:999; }
+.menu { position:fixed; left:-220px; top:0; width:200px; height:100%; background:#111; padding:15px; border-right:2px solid #9200D6; transition:0.3s; z-index:999; overflow-y:auto; }
 .menu.ativo { left:0; }
 .menu h3 { color:#9200D6; text-align:center; }
-.pasta { padding:12px; margin:6px 0; background:#222; border-radius:8px; cursor:pointer; text-align:center; font-weight:bold; }
+.pasta { padding:12px; margin:6px 0; background:#222; border-radius:8px; cursor:pointer; text-align:center; font-weight:bold; display:flex; justify-content:space-between; }
 .pasta:hover { background:#9200D6; }
+.pasta span { font-size:12px; color:#aaa; }
 
- /* CONTEUDO */
 .conteudo { padding:60px 15px 15px 15px; text-align:center; }
  h1 { color:#9200D6; }
  input { width:100px; padding:10px; border-radius:8px; border:2px solid #9200D6; background:#222; color:white; text-align:center; margin:3px; }
  button { padding:10px 15px; background:#9200D6; border:none; border-radius:10px; cursor:pointer; font-weight:bold; margin:5px; color:#fff; }
+.btnNav { background:#00BFFF; } /* Azul pros botoes de navegação */
+.btnApagar { background:#ff0000; padding:5px 10px; font-size:12px; margin-top:5px; }
 
 .tabela { display:grid; grid-template-columns: repeat(5, 1fr); gap:5px; max-width:300px; margin:20px auto; }
 .numero { width:100%; aspect-ratio:1/1; border:1px solid #444; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; background:#222; }
 .sorteado { background:#9200D6!important; }
 
-.jogoSalvo { background:#222; padding:10px; margin:10px auto; border-radius:10px; max-width:400px; text-align:left; border:1px solid #9200D6; }
+.jogoSalvo { background:#222; padding:12px; margin:10px auto; border-radius:10px; max-width:400px; text-align:left; border:1px solid #9200D6; }
 .oculto { display:none; }
 </style>
 </head>
@@ -35,38 +33,27 @@
 
 <button class="btnMenu" onclick="toggleMenu()">☰</button>
 
-<!-- MENU LATERAL -->
 <div class="menu" id="menuLateral">
  <h3>📁 PASTAS</h3>
- <div class="pasta" onclick="abrirPasta('4.7.4')">4.7.4</div>
- <div class="pasta" onclick="abrirPasta('5.5.5')">5.5.5</div>
- <div class="pasta" onclick="abrirPasta('5.6.4')">5.6.4</div>
- <div class="pasta" onclick="abrirPasta('6.5.4')">6.5.4</div>
- <div class="pasta" onclick="abrirPasta('6.7.2')">6.7.2</div>
- <div class="pasta" onclick="abrirPasta('7.6.2')">7.6.2</div>
- <div class="pasta" onclick="abrirPasta('6.6.3')">6.6.3</div>
- <div class="pasta" onclick="abrirPasta('5.7.3')">5.7.3</div>
- <div class="pasta" onclick="abrirPasta('7.5.3')">7.5.3</div>
- <div class="pasta" onclick="abrirPasta('7.6.2')">7.6.2</div>
+ <div id="listaPastas"></div>
 </div>
 
-<!-- CONTEUDO PRINCIPAL -->
 <div class="conteudo" id="telaPesquisa">
  <h1>🎯 Analisador Lotofácil PRO</h1>
-
- De: <input type="number" id="de" placeholder="3132">
- Até: <input type="number" id="ate" placeholder="3132">
+ De: <input type="number" id="de" placeholder="3131">
+ Até: <input type="number" id="ate" placeholder="3131">
  <br>
  <button onclick="buscarIntervalo()">🔍 PESQUISAR</button>
  <button onclick="ultimo()">ULTIMO</button>
  <button onclick="copiarNumeros()">📋 COPIAR</button>
  <button onclick="salvarJogo()">💾 SALVAR</button>
-
+ <br>
+ <button class="btnNav" onclick="anterior()">⬅ ANTERIOR</button>
+ <button class="btnNav" onclick="proximo()">PRÓXIMO ➡</button>
  <div id="info"></div>
  <div class="tabela" id="tabela"></div>
 </div>
 
-<!-- TELA DAS PASTAS -->
 <div class="conteudo oculto" id="telaPasta">
  <button onclick="voltarPesquisa()">⬅ VOLTAR</button>
  <div id="areaPastas"></div>
@@ -77,6 +64,8 @@ const API = "https://loteriascaixa-api.herokuapp.com/api/lotofacil/";
 let jogoAtual = {};
 let banco = JSON.parse(localStorage.getItem('lotofacilBanco')) || {};
 
+const pastasLista = ['4.7.4','5.5.5','5.6.4','6.5.4','6.7.2','7.6.2','6.6.3','5.7.3','7.5.3','7.6.2'];
+
 function criarTabela(){
   const tabela = document.getElementById('tabela');
   tabela.innerHTML = "";
@@ -84,11 +73,19 @@ function criarTabela(){
     let num = i.toString().padStart(2, '0');
     tabela.innerHTML += `<div class="numero" id="n${num}">${num}</div>`;
   }
+  montarMenu();
 }
 
-function toggleMenu(){
-  document.getElementById('menuLateral').classList.toggle('ativo');
+function montarMenu(){
+  let html = "";
+  pastasLista.forEach(p => {
+    let qtd = banco[p]? banco[p].length : 0;
+    html += `<div class="pasta" onclick="abrirPasta('${p}')">${p} <span>${qtd} jogos</span></div>`;
+  });
+  document.getElementById('listaPastas').innerHTML = html;
 }
+
+function toggleMenu(){ document.getElementById('menuLateral').classList.toggle('ativo'); }
 
 function analisarPadrao(dezenas){
   let g0 = dezenas.filter(n => parseInt(n) <= 9).length;
@@ -101,14 +98,26 @@ function analisarPadrao(dezenas){
 
 async function buscarIntervalo(){
   let de = parseInt(document.getElementById('de').value);
-  let res = await fetch(API + de);
-  let data = await res.json();
-  mostrar(data);
+  let ate = parseInt(document.getElementById('ate').value);
+  if(!de) return alert("Digite um concurso");
+
+  document.getElementById('info').innerText = `Buscando ${de} até ${ate}...`;
+  limparTabela();
+
+  for(let i = de; i <= ate; i++){
+    try{
+      let res = await fetch(API + i);
+      let data = await res.json();
+      if(!data.erro) mostrar(data);
+    }catch(e){}
+  }
 }
 
 async function ultimo(){
   let res = await fetch(API + "latest");
   let data = await res.json();
+  document.getElementById('de').value = data.concurso;
+  document.getElementById('ate').value = data.concurso;
   mostrar(data);
 }
 
@@ -117,20 +126,11 @@ function mostrar(data){
   jogoAtual = analisarPadrao(data.dezenas);
   jogoAtual.concurso = data.concurso;
   jogoAtual.data = data.data;
-
-  document.getElementById('info').innerHTML = `
-  <h2>Concurso ${data.concurso} - ${data.data}</h2>
-  <p><b>Padrão:</b> ${jogoAtual.padrao} | <b>Pares:</b> ${jogoAtual.pares} | <b>Ímpares:</b> ${jogoAtual.impares}</p>
-  `;
-
-  data.dezenas.forEach(n => {
-    document.getElementById('n' + n).classList.add('sorteado');
-  });
+  document.getElementById('info').innerHTML = `<h2>Concurso ${data.concurso} - ${data.data}</h2><p><b>Padrão:</b> ${jogoAtual.padrao} | <b>Pares:</b> ${jogoAtual.pares} | <b>Ímpares:</b> ${jogoAtual.impares}</p>`;
+  data.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
 }
 
-function limparTabela(){
-  document.querySelectorAll('.numero').forEach(el => el.classList.remove('sorteado'));
-}
+function limparTabela(){ document.querySelectorAll('.numero').forEach(el => el.classList.remove('sorteado')); }
 
 function copiarNumeros(){
   if(!jogoAtual.dezenas) return alert("Pesquise primeiro");
@@ -145,14 +145,41 @@ function salvarJogo(){
   if(!banco[pasta].find(j => j.concurso == jogoAtual.concurso)){
     banco[pasta].push(jogoAtual);
     localStorage.setItem('lotofacilBanco', JSON.stringify(banco));
+    montarMenu();
     alert(`Jogo salvo na pasta ${pasta}!`);
-  } else {
-    alert("Esse concurso já está salvo");
+  } else { alert("Esse concurso já está salvo"); }
+}
+
+// NOVAS FUNÇÕES
+function proximo(){
+  let de = parseInt(document.getElementById('de').value);
+  let ate = parseInt(document.getElementById('ate').value);
+  if(!de) return;
+  document.getElementById('de').value = de + 1;
+  document.getElementById('ate').value = ate + 1;
+  buscarIntervalo();
+}
+
+function anterior(){
+  let de = parseInt(document.getElementById('de').value);
+  let ate = parseInt(document.getElementById('ate').value);
+  if(!de || de <= 1) return;
+  document.getElementById('de').value = de - 1;
+  document.getElementById('ate').value = ate - 1;
+  buscarIntervalo();
+}
+
+function apagarJogo(pasta, concurso){
+  if(confirm(`Apagar concurso ${concurso} da pasta ${pasta}?`)){
+    banco[pasta] = banco[pasta].filter(j => j.concurso!= concurso);
+    localStorage.setItem('lotofacilBanco', JSON.stringify(banco));
+    montarMenu();
+    abrirPasta(pasta);
   }
 }
 
 function abrirPasta(pasta){
-  toggleMenu(); // fecha o menu
+  toggleMenu();
   document.getElementById('telaPesquisa').classList.add('oculto');
   document.getElementById('telaPasta').classList.remove('oculto');
 
@@ -167,6 +194,7 @@ function abrirPasta(pasta){
       <b>Números:</b> ${j.dezenas.join(", ")}<br>
       <b>Pares:</b> ${j.pares} | <b>Ímpares:</b> ${j.impares}<br>
       <button onclick="navigator.clipboard.writeText('${j.dezenas.join(", ")}')">📋 Copiar</button>
+      <button class="btnApagar" onclick="apagarJogo('${pasta}', ${j.concurso})">🗑️ Apagar</button>
     </div>
     `;
   });
