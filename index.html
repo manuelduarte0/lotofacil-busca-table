@@ -18,14 +18,15 @@
  h1 { color:#9200D6; }
  input { width:100px; padding:10px; border-radius:8px; border:2px solid #9200D6; background:#222; color:white; text-align:center; margin:3px; }
  button { padding:10px 15px; background:#9200D6; border:none; border-radius:10px; cursor:pointer; font-weight:bold; margin:5px; color:#fff; }
-.btnNav { background:#00BFFF; } /* Azul pros botoes de navegação */
+.btnNav { background:#00BFFF; }
 .btnApagar { background:#ff0000; padding:5px 10px; font-size:12px; margin-top:5px; }
 
 .tabela { display:grid; grid-template-columns: repeat(5, 1fr); gap:5px; max-width:300px; margin:20px auto; }
 .numero { width:100%; aspect-ratio:1/1; border:1px solid #444; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; background:#222; }
 .sorteado { background:#9200D6!important; }
 
-.jogoSalvo { background:#222; padding:12px; margin:10px auto; border-radius:10px; max-width:400px; text-align:left; border:1px solid #9200D6; }
+.jogoSalvo { background:#222; padding:12px; margin:10px auto; border-radius:10px; max-width:400px; text-align:left; border:1px solid #9200D6; cursor:pointer; transition:0.2s; }
+.jogoSalvo:hover { background:#333; border-color:#9200D6; } /* fica clicável */
 .oculto { display:none; }
 </style>
 </head>
@@ -63,7 +64,6 @@
 const API = "https://loteriascaixa-api.herokuapp.com/api/lotofacil/";
 let jogoAtual = {};
 let banco = JSON.parse(localStorage.getItem('lotofacilBanco')) || {};
-
 const pastasLista = ['4.7.4','5.5.5','5.6.4','6.5.4','6.7.2','7.6.2','6.6.3','5.7.3','7.5.3','7.6.2'];
 
 function criarTabela(){
@@ -100,10 +100,8 @@ async function buscarIntervalo(){
   let de = parseInt(document.getElementById('de').value);
   let ate = parseInt(document.getElementById('ate').value);
   if(!de) return alert("Digite um concurso");
-
   document.getElementById('info').innerText = `Buscando ${de} até ${ate}...`;
   limparTabela();
-
   for(let i = de; i <= ate; i++){
     try{
       let res = await fetch(API + i);
@@ -130,6 +128,17 @@ function mostrar(data){
   data.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
 }
 
+// NOVA FUNÇÃO: Carregar jogo salvo na tabela
+function carregarJogoNaTabela(jogo){
+  voltarPesquisa();
+  limparTabela();
+  jogoAtual = jogo;
+  document.getElementById('de').value = jogo.concurso;
+  document.getElementById('ate').value = jogo.concurso;
+  document.getElementById('info').innerHTML = `<h2>Concurso ${jogo.concurso} - ${jogo.data}</h2><p><b>Padrão:</b> ${jogo.padrao} | <b>Pares:</b> ${jogo.pares} | <b>Ímpares:</b> ${jogo.impares}</p>`;
+  jogo.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
+}
+
 function limparTabela(){ document.querySelectorAll('.numero').forEach(el => el.classList.remove('sorteado')); }
 
 function copiarNumeros(){
@@ -150,7 +159,6 @@ function salvarJogo(){
   } else { alert("Esse concurso já está salvo"); }
 }
 
-// NOVAS FUNÇÕES
 function proximo(){
   let de = parseInt(document.getElementById('de').value);
   let ate = parseInt(document.getElementById('ate').value);
@@ -169,7 +177,8 @@ function anterior(){
   buscarIntervalo();
 }
 
-function apagarJogo(pasta, concurso){
+function apagarJogo(pasta, concurso, event){
+  event.stopPropagation(); // evita abrir o jogo ao clicar em apagar
   if(confirm(`Apagar concurso ${concurso} da pasta ${pasta}?`)){
     banco[pasta] = banco[pasta].filter(j => j.concurso!= concurso);
     localStorage.setItem('lotofacilBanco', JSON.stringify(banco));
@@ -189,12 +198,12 @@ function abrirPasta(pasta){
 
   jogos.forEach(j => {
     html += `
-    <div class="jogoSalvo">
+    <div class="jogoSalvo" onclick='carregarJogoNaTabela(${JSON.stringify(j)})'>
       <b>Concurso:</b> ${j.concurso} - ${j.data}<br>
       <b>Números:</b> ${j.dezenas.join(", ")}<br>
       <b>Pares:</b> ${j.pares} | <b>Ímpares:</b> ${j.impares}<br>
-      <button onclick="navigator.clipboard.writeText('${j.dezenas.join(", ")}')">📋 Copiar</button>
-      <button class="btnApagar" onclick="apagarJogo('${pasta}', ${j.concurso})">🗑️ Apagar</button>
+      <button onclick="event.stopPropagation(); navigator.clipboard.writeText('${j.dezenas.join(", ")}')">📋 Copiar</button>
+      <button class="btnApagar" onclick="apagarJogo('${pasta}', ${j.concurso}, event)">🗑️ Apagar</button>
     </div>
     `;
   });
