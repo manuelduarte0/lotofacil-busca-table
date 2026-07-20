@@ -13,7 +13,7 @@
 .pasta { padding:12px; margin:6px 0; background:#222; border-radius:8px; cursor:pointer; text-align:center; font-weight:bold; display:flex; justify-content:space-between; }
 .pasta:hover { background:#9200D6; }
 .pasta span { font-size:12px; color:#aaa; }
-.pastaMae { background:#9200D6; border:2px solid #00BFFF; } /* destaque pra pasta mãe */
+.pastaMae { background:#9200D6; border:2px solid #00BFFF; }
 
 .conteudo { padding:60px 15px 15px 15px; text-align:center; }
  h1 { color:#9200D6; }
@@ -89,13 +89,12 @@ const API = "https://loteriascaixa-api.herokuapp.com/api/lotofacil/";
 let jogoAtual = {};
 let banco = JSON.parse(localStorage.getItem('lotofacilBanco')) || {};
 let pastaAberta = "";
-let faixaAberta = ""; // guarda a faixa mãe
+let faixaAberta = "";
 const padroesLista = ['4.7.4','5.5.5','5.6.4','6.5.4','6.7.2','7.6.2','6.6.3','5.7.3','7.5.3','7.6.2'];
 
-// Gera as faixas de 100 em 100. Ex: 3101, 3201, 3301...
 function gerarFaixas(){
   let faixas = ['TODOS'];
-  for(let i = 3101; i <= 4001; i += 100){ // ajuste até onde quiser
+  for(let i = 3101; i <= 4001; i += 100){
     faixas.push(i);
   }
   return faixas;
@@ -123,7 +122,6 @@ function montarMenuPrincipal(){
 
 function contarJogosNaFaixa(faixa){
   if(faixa == 'TODOS') return Object.values(banco).flat().length;
-
   let inicio = parseInt(faixa);
   let fim = inicio + 99;
   let total = 0;
@@ -142,6 +140,15 @@ function analisarPadrao(dezenas){
   let pares = dezenas.filter(n => parseInt(n) % 2 == 0).length;
   let impares = 15 - pares;
   return {padrao: `${g0}.${g1}.${g2}`, pares, impares, dezenas};
+}
+
+async function buscarIntervalo(){
+  let de = document.getElementById('de').value;
+  let ate = document.getElementById('ate').value;
+  if(!de ||!ate) return alert("Preencha DE e ATÉ");
+  let res = await fetch(API + de);
+  let data = await res.json();
+  mostrar(data);
 }
 
 async function ultimo(){
@@ -266,7 +273,6 @@ function buscarCombinacao(){
   document.getElementById('resultadoBusca').innerHTML = html;
 }
 
-// NOVA: Pega todos jogos de uma faixa
 function getJogosDaFaixa(faixa){
   let todosJogos = [];
   if(faixa == 'TODOS'){
@@ -281,7 +287,6 @@ function getJogosDaFaixa(faixa){
   return todosJogos;
 }
 
-// NOVA: Abre a pasta MÃE e mostra as pastas de padrão dentro
 function abrirFaixa(faixa){
   faixaAberta = faixa;
   toggleMenu();
@@ -295,7 +300,6 @@ function abrirFaixa(faixa){
   let html = `<h2>📁 ${tituloFaixa}</h2>`;
   html += `<h3>Selecione o Padrão:</h3>`;
 
-  // Mostra só os padrões que tem jogo nessa faixa
   padroesLista.forEach(padrao => {
     let jogosDoPadrao = banco[padrao]? banco[padrao].filter(j => {
       if(faixa == 'TODOS') return true;
@@ -313,7 +317,7 @@ function abrirFaixa(faixa){
   calcularFrequencia(jogosDaFaixa);
 }
 
-// NOVA: Abre a pasta do padrão já filtrada pela faixa
+// CORRIGIDA AQUI
 function abrirPastaPadrao(padrao){
   pastaAberta = padrao;
   let jogosDoPadrao = banco[padrao]? banco[padrao].filter(j => {
@@ -321,8 +325,10 @@ function abrirPastaPadrao(padrao){
     return j.concurso >= parseInt(faixaAberta) && j.concurso <= parseInt(faixaAberta)+99;
   }) : [];
 
+  let tituloFaixa = faixaAberta == 'TODOS'? 'TODOS' : `${faixaAberta} a ${parseInt(faixaAberta)+99}`;
+
   let html = `<button onclick="abrirFaixa('${faixaAberta}')">⬅ VOLTAR FAIXA</button>`;
-  html += `<h2>📁 Padrão ${padrao} - ${jogosDaFaixa.length} jogos</h2>`;
+  html += `<h2>📁 Padrão ${padrao} - Faixa ${tituloFaixa}</h2>`;
 
   let duplicatas = verificarDuplicidade(jogosDoPadrao);
   if(duplicatas.length > 0){
