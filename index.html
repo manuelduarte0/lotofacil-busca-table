@@ -5,15 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Analisador Lotofácil PRO</title>
 <style>
- body { background:#0A0A0A; color:white; font-family:Arial; margin:0; }
- /* MENU LATERAL */
-.menu { position:fixed; left:0; top:0; width:200px; height:100%; background:#111; padding:15px; overflow-y:auto; border-right:2px solid #9200D6; }
+ body { background:#0A0A0A; color:white; font-family:Arial; margin:0; padding:0; }
+
+ /* BOTAO MENU */
+.btnMenu { position:fixed; top:10px; left:10px; z-index:1000; font-size:28px; background:#9200D6; border:none; color:white; padding:8px 14px; border-radius:8px; cursor:pointer; }
+
+ /* MENU LATERAL ESCONDIDO */
+.menu { position:fixed; left:-220px; top:0; width:200px; height:100%; background:#111; padding:15px; border-right:2px solid #9200D6; transition:0.3s; z-index:999; }
+.menu.ativo { left:0; }
 .menu h3 { color:#9200D6; text-align:center; }
-.pasta { padding:10px; margin:5px 0; background:#222; border-radius:8px; cursor:pointer; text-align:center; font-weight:bold; }
+.pasta { padding:12px; margin:6px 0; background:#222; border-radius:8px; cursor:pointer; text-align:center; font-weight:bold; }
 .pasta:hover { background:#9200D6; }
 
  /* CONTEUDO */
-.conteudo { margin-left:220px; padding:15px; text-align:center; }
+.conteudo { padding:60px 15px 15px 15px; text-align:center; }
  h1 { color:#9200D6; }
  input { width:100px; padding:10px; border-radius:8px; border:2px solid #9200D6; background:#222; color:white; text-align:center; margin:3px; }
  button { padding:10px 15px; background:#9200D6; border:none; border-radius:10px; cursor:pointer; font-weight:bold; margin:5px; color:#fff; }
@@ -23,12 +28,15 @@
 .sorteado { background:#9200D6!important; }
 
 .jogoSalvo { background:#222; padding:10px; margin:10px auto; border-radius:10px; max-width:400px; text-align:left; border:1px solid #9200D6; }
+.oculto { display:none; }
 </style>
 </head>
 <body>
 
+<button class="btnMenu" onclick="toggleMenu()">☰</button>
+
 <!-- MENU LATERAL -->
-<div class="menu">
+<div class="menu" id="menuLateral">
  <h3>📁 PASTAS</h3>
  <div class="pasta" onclick="abrirPasta('4.7.4')">4.7.4</div>
  <div class="pasta" onclick="abrirPasta('5.5.5')">5.5.5</div>
@@ -43,7 +51,7 @@
 </div>
 
 <!-- CONTEUDO PRINCIPAL -->
-<div class="conteudo">
+<div class="conteudo" id="telaPesquisa">
  <h1>🎯 Analisador Lotofácil PRO</h1>
 
  De: <input type="number" id="de" placeholder="3132">
@@ -56,13 +64,18 @@
 
  <div id="info"></div>
  <div class="tabela" id="tabela"></div>
+</div>
+
+<!-- TELA DAS PASTAS -->
+<div class="conteudo oculto" id="telaPasta">
+ <button onclick="voltarPesquisa()">⬅ VOLTAR</button>
  <div id="areaPastas"></div>
 </div>
 
 <script>
 const API = "https://loteriascaixa-api.herokuapp.com/api/lotofacil/";
-let jogoAtual = {}; // guarda o jogo atual pra salvar
-let banco = JSON.parse(localStorage.getItem('lotofacilBanco')) || {}; // salva no navegador
+let jogoAtual = {};
+let banco = JSON.parse(localStorage.getItem('lotofacilBanco')) || {};
 
 function criarTabela(){
   const tabela = document.getElementById('tabela');
@@ -73,10 +86,14 @@ function criarTabela(){
   }
 }
 
+function toggleMenu(){
+  document.getElementById('menuLateral').classList.toggle('ativo');
+}
+
 function analisarPadrao(dezenas){
-  let g0 = dezenas.filter(n => parseInt(n) <= 9).length; // 01-09
-  let g1 = dezenas.filter(n => parseInt(n) >= 10 && parseInt(n) <= 19).length; // 10-19
-  let g2 = dezenas.filter(n => parseInt(n) >= 20).length; // 20-25
+  let g0 = dezenas.filter(n => parseInt(n) <= 9).length;
+  let g1 = dezenas.filter(n => parseInt(n) >= 10 && parseInt(n) <= 19).length;
+  let g2 = dezenas.filter(n => parseInt(n) >= 20).length;
   let pares = dezenas.filter(n => parseInt(n) % 2 == 0).length;
   let impares = 15 - pares;
   return {padrao: `${g0}.${g1}.${g2}`, pares, impares, dezenas};
@@ -84,8 +101,7 @@ function analisarPadrao(dezenas){
 
 async function buscarIntervalo(){
   let de = parseInt(document.getElementById('de').value);
-  let ate = parseInt(document.getElementById('ate').value);
-  let res = await fetch(API + de); // pega só 1 pra exemplo
+  let res = await fetch(API + de);
   let data = await res.json();
   mostrar(data);
 }
@@ -119,25 +135,27 @@ function limparTabela(){
 function copiarNumeros(){
   if(!jogoAtual.dezenas) return alert("Pesquise primeiro");
   navigator.clipboard.writeText(jogoAtual.dezenas.join(", "));
-  alert("Copiado: " + jogoAtual.dezenas.join(", "));
+  alert("Copiado!");
 }
 
 function salvarJogo(){
   if(!jogoAtual.dezenas) return alert("Pesquise um concurso primeiro");
   let pasta = jogoAtual.padrao;
   if(!banco[pasta]) banco[pasta] = [];
-
-  // evita duplicar
   if(!banco[pasta].find(j => j.concurso == jogoAtual.concurso)){
     banco[pasta].push(jogoAtual);
     localStorage.setItem('lotofacilBanco', JSON.stringify(banco));
     alert(`Jogo salvo na pasta ${pasta}!`);
   } else {
-    alert("Esse concurso já está salvo nessa pasta");
+    alert("Esse concurso já está salvo");
   }
 }
 
 function abrirPasta(pasta){
+  toggleMenu(); // fecha o menu
+  document.getElementById('telaPesquisa').classList.add('oculto');
+  document.getElementById('telaPasta').classList.remove('oculto');
+
   let jogos = banco[pasta] || [];
   let html = `<h2>📁 Pasta ${pasta} - ${jogos.length} jogos</h2>`;
   if(jogos.length == 0) html += "<p>Nenhum jogo salvo aqui</p>";
@@ -153,6 +171,11 @@ function abrirPasta(pasta){
     `;
   });
   document.getElementById('areaPastas').innerHTML = html;
+}
+
+function voltarPesquisa(){
+  document.getElementById('telaPasta').classList.add('oculto');
+  document.getElementById('telaPesquisa').classList.remove('oculto');
 }
 
 criarTabela();
