@@ -13,6 +13,7 @@
 .pasta { padding:12px; margin:6px 0; background:#222; border-radius:8px; cursor:pointer; text-align:center; font-weight:bold; display:flex; justify-content:space-between; }
 .pasta:hover { background:#9200D6; }
 .pasta span { font-size:12px; color:#aaa; }
+.pastaMae { background:#9200D6; border:2px solid #00BFFF; } /* destaque pra pasta mãe */
 
 .conteudo { padding:60px 15px 15px 15px; text-align:center; }
  h1 { color:#9200D6; }
@@ -21,6 +22,7 @@
  button { padding:10px 15px; background:#9200D6; border:none; border-radius:10px; cursor:pointer; font-weight:bold; margin:5px; color:#fff; }
 .btnNav { background:#00BFFF; }
 .btnApagar { background:#ff0000; padding:5px 10px; font-size:12px; margin-top:5px; }
+.btnVoltarPasta { background:#555; }
 
 .tabela { display:grid; grid-template-columns: repeat(5, 1fr); gap:5px; max-width:300px; margin:20px auto; }
 .numero { width:100%; aspect-ratio:1/1; border:1px solid #444; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; background:#222; }
@@ -32,7 +34,6 @@
 .alerta { background:#ff9800; color:#000; padding:10px; border-radius:10px; margin:10px auto; max-width:400px; text-align:left; font-weight:bold; }
 .boxBusca { background:#222; padding:15px; border-radius:10px; margin:15px auto; max-width:400px; border:2px solid #00BFFF; }
 
-/* TABELA FREQUENCIA */
 .freqTabela { display:grid; grid-template-columns: repeat(5, 1fr); gap:5px; max-width:400px; margin:15px auto; }
 .freqItem { background:#222; border:1px solid #9200D6; border-radius:8px; padding:8px 5px; }
 .freqNum { font-size:18px; font-weight:bold; color:#9200D6; }
@@ -67,7 +68,7 @@
 </div>
 
 <div class="conteudo oculto" id="telaPasta">
- <button onclick="voltarPesquisa()">⬅ VOLTAR</button>
+ <button class="btnVoltarPasta" onclick="voltarMenuPrincipal()">⬅ VOLTAR PASTAS</button>
 
  <div class="boxBusca">
   <h3>🔍 BUSCAR COMBINAÇÃO</h3>
@@ -88,7 +89,17 @@ const API = "https://loteriascaixa-api.herokuapp.com/api/lotofacil/";
 let jogoAtual = {};
 let banco = JSON.parse(localStorage.getItem('lotofacilBanco')) || {};
 let pastaAberta = "";
-const pastasLista = ['4.7.4','5.5.5','5.6.4','6.5.4','6.7.2','7.6.2','6.6.3','5.7.3','7.5.3','7.6.2'];
+let faixaAberta = ""; // guarda a faixa mãe
+const padroesLista = ['4.7.4','5.5.5','5.6.4','6.5.4','6.7.2','7.6.2','6.6.3','5.7.3','7.5.3','7.6.2'];
+
+// Gera as faixas de 100 em 100. Ex: 3101, 3201, 3301...
+function gerarFaixas(){
+  let faixas = ['TODOS'];
+  for(let i = 3101; i <= 4001; i += 100){ // ajuste até onde quiser
+    faixas.push(i);
+  }
+  return faixas;
+}
 
 function criarTabela(){
   const tabela = document.getElementById('tabela');
@@ -97,16 +108,29 @@ function criarTabela(){
     let num = i.toString().padStart(2, '0');
     tabela.innerHTML += `<div class="numero" id="n${num}">${num}</div>`;
   }
-  montarMenu();
+  montarMenuPrincipal();
 }
 
-function montarMenu(){
+function montarMenuPrincipal(){
   let html = "";
-  pastasLista.forEach(p => {
-    let qtd = banco[p]? banco[p].length : 0;
-    html += `<div class="pasta" onclick="abrirPasta('${p}')">${p} <span>${qtd} jogos</span></div>`;
+  let faixas = gerarFaixas();
+  faixas.forEach(f => {
+    let qtd = contarJogosNaFaixa(f);
+    html += `<div class="pasta pastaMae" onclick="abrirFaixa('${f}')">${f} <span>${qtd} jogos</span></div>`;
   });
   document.getElementById('listaPastas').innerHTML = html;
+}
+
+function contarJogosNaFaixa(faixa){
+  if(faixa == 'TODOS') return Object.values(banco).flat().length;
+
+  let inicio = parseInt(faixa);
+  let fim = inicio + 99;
+  let total = 0;
+  Object.values(banco).forEach(pasta => {
+    total += pasta.filter(j => j.concurso >= inicio && j.concurso <= fim).length;
+  });
+  return total;
 }
 
 function toggleMenu(){ document.getElementById('menuLateral').classList.toggle('ativo'); }
@@ -162,7 +186,7 @@ function salvarJogo(){
   if(!banco[pasta].find(j => j.concurso == jogoAtual.concurso)){
     banco[pasta].push(jogoAtual);
     localStorage.setItem('lotofacilBanco', JSON.stringify(banco));
-    montarMenu();
+    montarMenuPrincipal();
     alert(`Jogo salvo na pasta ${pasta}!`);
   } else { alert("Esse concurso já está salvo"); }
 }
@@ -185,13 +209,13 @@ function anterior(){
   buscarIntervalo();
 }
 
-function apagarJogo(pasta, concurso, event){
+function apagarJogo(padrao, concurso, event){
   event.stopPropagation();
-  if(confirm(`Apagar concurso ${concurso} da pasta ${pasta}?`)){
-    banco[pasta] = banco[pasta].filter(j => j.concurso!= concurso);
+  if(confirm(`Apagar concurso ${concurso} da pasta ${padrao}?`)){
+    banco[padrao] = banco[padrao].filter(j => j.concurso!= concurso);
     localStorage.setItem('lotofacilBanco', JSON.stringify(banco));
-    montarMenu();
-    abrirPasta(pasta);
+    montarMenuPrincipal();
+    abrirFaixa(faixaAberta);
   }
 }
 
@@ -212,14 +236,10 @@ function verificarDuplicidade(jogos){
   return alertas;
 }
 
-// NOVA FUNÇÃO: CALCULA FREQUENCIA
 function calcularFrequencia(jogos){
   let freq = {};
   for(let i=1; i<=25; i++) freq[i.toString().padStart(2,'0')] = 0;
-
-  jogos.forEach(j => {
-    j.dezenas.forEach(n => freq[n]++);
-  });
+  jogos.forEach(j => { j.dezenas.forEach(n => freq[n]++); });
 
   let html = "";
   for(let i=1; i<=25; i++){
@@ -233,7 +253,7 @@ function buscarCombinacao(){
   let texto = document.getElementById('buscaCombo').value;
   if(!texto) return alert("Digite os números");
   let combo = texto.split(',').map(n => n.trim().padStart(2,'0'));
-  let jogos = banco[pastaAberta] || [];
+  let jogos = getJogosDaFaixa(faixaAberta);
   let html = `<h4>Resultado da busca:</h4>`;
 
   jogos.forEach(j => {
@@ -246,42 +266,88 @@ function buscarCombinacao(){
   document.getElementById('resultadoBusca').innerHTML = html;
 }
 
-function abrirPasta(pasta){
-  pastaAberta = pasta;
+// NOVA: Pega todos jogos de uma faixa
+function getJogosDaFaixa(faixa){
+  let todosJogos = [];
+  if(faixa == 'TODOS'){
+    Object.values(banco).forEach(pasta => todosJogos.push(...pasta));
+    return todosJogos;
+  }
+  let inicio = parseInt(faixa);
+  let fim = inicio + 99;
+  Object.values(banco).forEach(pasta => {
+    todosJogos.push(...pasta.filter(j => j.concurso >= inicio && j.concurso <= fim));
+  });
+  return todosJogos;
+}
+
+// NOVA: Abre a pasta MÃE e mostra as pastas de padrão dentro
+function abrirFaixa(faixa){
+  faixaAberta = faixa;
   toggleMenu();
   document.getElementById('telaPesquisa').classList.add('oculto');
   document.getElementById('telaPasta').classList.remove('oculto');
   document.getElementById('resultadoBusca').innerHTML = "";
 
-  let jogos = banco[pasta] || [];
-  calcularFrequencia(jogos); // ATUALIZA TABELA
+  let jogosDaFaixa = getJogosDaFaixa(faixa);
+  let tituloFaixa = faixa == 'TODOS'? 'TODOS OS CONCURSOS' : `Concursos ${faixa} a ${parseInt(faixa)+99}`;
 
-  let html = `<h2>📁 Pasta ${pasta} - ${jogos.length} jogos</h2>`;
+  let html = `<h2>📁 ${tituloFaixa}</h2>`;
+  html += `<h3>Selecione o Padrão:</h3>`;
 
-  let duplicatas = verificarDuplicidade(jogos);
+  // Mostra só os padrões que tem jogo nessa faixa
+  padroesLista.forEach(padrao => {
+    let jogosDoPadrao = banco[padrao]? banco[padrao].filter(j => {
+      if(faixa == 'TODOS') return true;
+      return j.concurso >= parseInt(faixa) && j.concurso <= parseInt(faixa)+99;
+    }) : [];
+
+    if(jogosDoPadrao.length > 0){
+      html += `<div class="pasta" onclick="abrirPastaPadrao('${padrao}')">${padrao} <span>${jogosDoPadrao.length} jogos</span></div>`;
+    }
+  });
+
+  if(jogosDaFaixa.length == 0) html += "<p>Nenhum jogo salvo nessa faixa</p>";
+
+  document.getElementById('areaPastas').innerHTML = html;
+  calcularFrequencia(jogosDaFaixa);
+}
+
+// NOVA: Abre a pasta do padrão já filtrada pela faixa
+function abrirPastaPadrao(padrao){
+  pastaAberta = padrao;
+  let jogosDoPadrao = banco[padrao]? banco[padrao].filter(j => {
+    if(faixaAberta == 'TODOS') return true;
+    return j.concurso >= parseInt(faixaAberta) && j.concurso <= parseInt(faixaAberta)+99;
+  }) : [];
+
+  let html = `<button onclick="abrirFaixa('${faixaAberta}')">⬅ VOLTAR FAIXA</button>`;
+  html += `<h2>📁 Padrão ${padrao} - ${jogosDaFaixa.length} jogos</h2>`;
+
+  let duplicatas = verificarDuplicidade(jogosDoPadrao);
   if(duplicatas.length > 0){
     html += `<div class="alerta"><b>🔍 Alerta de Similaridade:</b><br>${duplicatas.join('<br>')}</div>`;
   }
 
-  if(jogos.length == 0) html += "<p>Nenhum jogo salvo aqui</p>";
-
-  jogos.forEach(j => {
+  jogosDoPadrao.forEach(j => {
     html += `
     <div class="jogoSalvo" onclick='carregarJogoNaTabela(${JSON.stringify(j)})'>
       <b>Concurso:</b> ${j.concurso} - ${j.data}<br>
       <b>Números:</b> ${j.dezenas.join(", ")}<br>
       <b>Pares:</b> ${j.pares} | <b>Ímpares:</b> ${j.impares}<br>
       <button onclick="event.stopPropagation(); navigator.clipboard.writeText('${j.dezenas.join(", ")}')">📋 Copiar</button>
-      <button class="btnApagar" onclick="apagarJogo('${pasta}', ${j.concurso}, event)">🗑️ Apagar</button>
+      <button class="btnApagar" onclick="apagarJogo('${padrao}', ${j.concurso}, event)">🗑️ Apagar</button>
     </div>
     `;
   });
   document.getElementById('areaPastas').innerHTML = html;
+  calcularFrequencia(jogosDoPadrao);
 }
 
-function voltarPesquisa(){
+function voltarMenuPrincipal(){
   document.getElementById('telaPasta').classList.add('oculto');
   document.getElementById('telaPesquisa').classList.remove('oculto');
+  montarMenuPrincipal();
 }
 
 criarTabela();
