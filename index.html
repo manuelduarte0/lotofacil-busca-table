@@ -278,8 +278,8 @@ function buscarCombinacao(){
   let texto = document.getElementById('buscaCombo').value;
   if(!texto) return alert("Digite os números");
   let combo = texto.split(',').map(n => n.trim().padStart(2,'0'));
-  let jogos = getJogosDaFaixa(faixaAberta);
-  let html = `<h4>Resultado da busca:</h4>`;
+  let jogos = getJogosDoPadrao(pastaAberta);
+  let html = `<h4>Resultado da busca no padrão ${pastaAberta}:</h4>`;
 
   jogos.forEach(j => {
     let acertos = contarIguais(combo, j.dezenas);
@@ -287,18 +287,19 @@ function buscarCombinacao(){
       html += `<p><b>Concurso ${j.concurso}:</b> ${acertos} acertos</p>`;
     }
   });
-  if(html == `<h4>Resultado da busca:</h4>`) html += `<p>Nenhum jogo bateu</p>`;
+  if(html == `<h4>Resultado da busca no padrão ${pastaAberta}:</h4>`) html += `<p>Nenhum jogo bateu</p>`;
   document.getElementById('resultadoBusca').innerHTML = html;
 }
 
-// NOVA FUNÇÃO: BUSCA INTELIGENTE
+// CORRIGIDA: BUSCA INTELIGENTE SÓ DO PADRÃO ABERTO
 function buscarInteligente(){
-  let jogos = getJogosDaFaixa(faixaAberta);
-  if(jogos.length < 3) return alert("Precisa de no mínimo 3 jogos salvos");
+  if(!pastaAberta) return alert("Abra um padrão primeiro");
+  let jogos = getJogosDoPadrao(pastaAberta);
+  if(jogos.length < 3) return alert(`Precisa de no mínimo 3 jogos no padrão ${pastaAberta}`);
 
   let mapaCombinacoes = {};
 
-  // Gera todas combinações de 5 números de cada jogo
+  // Gera todas combinações de 5 números de cada jogo do PADRÃO
   jogos.forEach(jogo => {
     let dezenas = jogo.dezenas;
     for(let i=0; i<dezenas.length-4; i++){
@@ -329,13 +330,13 @@ function buscarInteligente(){
     }
   }
 
-  // Ordena por quantidade de repetições
   resultados.sort((a,b) => b.qtd - a.qtd);
 
-  let html = `<h4>🧠 BUSCA INTELIGENTE - Sequências de 5+ que saíram em 3+ jogos</h4>`;
+  let html = `<h4>🧠 BUSCA INTELIGENTE - Padrão ${pastaAberta}</h4>`;
+  html += `<p>Sequências de 5+ que saíram em 3+ jogos desse grupo</p>`;
 
   if(resultados.length == 0){
-    html += `<p>Nenhuma sequência de 5 números se repetiu 3 vezes</p>`;
+    html += `<p>Nenhuma sequência de 5 números se repetiu 3 vezes no ${pastaAberta}</p>`;
   } else {
     resultados.slice(0, 20).forEach(r => {
       html += `<div class="resultadoInteligente">
@@ -363,6 +364,14 @@ function getJogosDaFaixa(faixa){
   return todosJogos;
 }
 
+function getJogosDoPadrao(padrao){
+  let jogosDoPadrao = banco[padrao]? banco[padrao].filter(j => {
+    if(faixaAberta == 'TODOS') return true;
+    return j.concurso >= parseInt(faixaAberta) && j.concurso <= parseInt(faixaAberta)+99;
+  }) : [];
+  return jogosDoPadrao;
+}
+
 function abrirFaixa(faixa){
   faixaAberta = faixa;
   toggleMenu();
@@ -377,11 +386,7 @@ function abrirFaixa(faixa){
   html += `<h3>Selecione o Padrão:</h3>`;
 
   padroesLista.forEach(padrao => {
-    let jogosDoPadrao = banco[padrao]? banco[padrao].filter(j => {
-      if(faixa == 'TODOS') return true;
-      return j.concurso >= parseInt(faixa) && j.concurso <= parseInt(faixa)+99;
-    }) : [];
-
+    let jogosDoPadrao = getJogosDoPadrao(padrao);
     if(jogosDoPadrao.length > 0){
       html += `<div class="pasta" onclick="abrirPastaPadrao('${padrao}')">${padrao} <span>${jogosDoPadrao.length} jogos</span></div>`;
     }
@@ -395,10 +400,7 @@ function abrirFaixa(faixa){
 
 function abrirPastaPadrao(padrao){
   pastaAberta = padrao;
-  let jogosDoPadrao = banco[padrao]? banco[padrao].filter(j => {
-    if(faixaAberta == 'TODOS') return true;
-    return j.concurso >= parseInt(faixaAberta) && j.concurso <= parseInt(faixaAberta)+99;
-  }) : [];
+  let jogosDoPadrao = getJogosDoPadrao(padrao);
 
   let tituloFaixa = faixaAberta == 'TODOS'? 'TODOS' : `${faixaAberta} a ${parseInt(faixaAberta)+99}`;
 
