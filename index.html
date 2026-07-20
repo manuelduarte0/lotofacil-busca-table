@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analisador Lotofácil</title>
+<style>
+ body { background:#0A0A0A; color:white; font-family:Arial; text-align:center; padding:15px; }
+ h1 { color:#9200D6; } /* Roxo Lotofácil */
+ input { width:100px; padding:10px; font-size:16px; border-radius:8px; border:2px solid #9200D6; background:#222; color:white; text-align:center; margin:3px; }
+ button { padding:12px 18px; font-size:15px; background:#9200D6; border:none; border-radius:10px; cursor:pointer; font-weight:bold; margin:5px; color:#fff; }
+
+.tabela { display:grid; grid-template-columns: repeat(5, 1fr); gap:5px; max-width:300px; margin:20px auto; }
+.numero { width:100%; aspect-ratio:1/1; border:1px solid #444; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; background:#222; transition:0.3s; font-size:15px; position:relative; }
+.numero span { font-size:10px; position:absolute; bottom:2px; right:3px; }
+
+ /* CORES POR FREQUENCIA */
+.freq1 { background:#9200D6!important; color:#fff; } /* 1x Roxo */
+.freq2 { background:#00BFFF!important; color:#000; } /* 2x Azul */
+.freq3 { background:#FF0000!important; color:#fff; } /* 3x Vermelho */
+.freq4 { background:#DA70D6!important; color:#fff; } /* 4x Lilás */
+.freq5 { background:#8B4513!important; color:#fff; } /* 5x Marrom */
+.freq6 { background:#00FF00!important; color:#000; } /* 6x Verde */
+.freq7 { background:#FFFF00!important; color:#000; } /* 7x+ Amarelo */
+
+#legenda { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; font-size:12px; margin:10px; }
+.leg { padding:4px 8px; border-radius:5px; }
+#msgCopia { color:#00ff88; display:none; }
+</style>
+</head>
+<body>
+
+<h1>🎯 Analisador Lotofácil</h1>
+
+De: <input type="number" id="de" placeholder="3101">
+Até: <input type="number" id="ate" placeholder="3110">
+<br>
+<button onclick="buscarIntervalo()">🔍 PESQUISAR</button>
+<button onclick="ultimo()">ULTIMO</button>
+<button onclick="copiarNumeros()">📋 COPIAR</button>
+<button onclick="limpar()">LIMPAR</button>
+
+<div id="info"></div>
+<p id="msgCopia">✅ Números copiados!</p>
+
+<div id="legenda">
+ <div class="leg freq1">1x Roxo</div>
+ <div class="leg freq2">2x Azul</div>
+ <div class="leg freq3">3x Vermelho</div>
+ <div class="leg freq4">4x Lilás</div>
+ <div class="leg freq5">5x Marrom</div>
+ <div class="leg freq6">6x Verde</div>
+ <div class="leg freq7">7x+ Amarelo</div>
+</div>
+
+<div class="tabela" id="tabela"></div>
+
+<script>
+const API = "https://loteriascaixa-api.herokuapp.com/api/lotofacil/";
+let contador = {};
+let ultimosNumeros = []; // pra copiar
+
+function criarTabela(){
+  const tabela = document.getElementById('tabela');
+  tabela.innerHTML = "";
+  for(let i = 1; i <= 25; i++){
+    let num = i.toString().padStart(2, '0');
+    tabela.innerHTML += `<div class="numero" id="n${num}">${num}<span id="c${num}"></span></div>`;
+  }
+}
+
+async function buscarIntervalo(){
+  let de = parseInt(document.getElementById('de').value);
+  let ate = parseInt(document.getElementById('ate').value);
+  if(!de ||!ate) return alert("Preencha De e Até");
+  if(ate - de > 9) return alert("Máximo 10 concursos por vez");
+
+  limpar();
+  document.getElementById('info').innerText = `Buscando ${de} até ${ate}...`;
+
+  for(let i = de; i <= ate; i++){
+    try{
+      let res = await fetch(API + i);
+      let data = await res.json();
+      if(!data.erro){
+        ultimosNumeros = data.dezenas; // guarda o último pra copiar
+        data.dezenas.forEach(n => {
+          contador[n] = (contador[n] || 0) + 1;
+        });
+      }
+    } catch(e){}
+  }
+  pintarTabela();
+  document.getElementById('info').innerText = `Analisados ${ate - de + 1} concursos`;
+}
+
+function pintarTabela(){
+  for(let num in contador){
+    let vezes = contador[num];
+    let el = document.getElementById('n' + num);
+    let contEl = document.getElementById('c' + num);
+    if(el){
+      let classe = vezes >= 7? 'freq7' : 'freq' + vezes;
+      el.classList.add(classe);
+      contEl.innerText = vezes;
+    }
+  }
+}
+
+async function ultimo(){
+  limpar();
+  document.getElementById('info').innerText = "Buscando último...";
+  let res = await fetch(API + "latest");
+  let data = await res.json();
+  ultimosNumeros = data.dezenas;
+  data.dezenas.forEach(n => contador[n] = 1);
+  pintarTabela();
+  document.getElementById('info').innerHTML = `<h2>Concurso ${data.concurso} - ${data.data}</h2>`;
+}
+
+function copiarNumeros(){
+  if(ultimosNumeros.length == 0) return alert("Pesquise um concurso primeiro");
+  let texto = ultimosNumeros.join(", ");
+  navigator.clipboard.writeText(texto).then(() => {
+    document.getElementById('msgCopia').style.display = "block";
+    setTimeout(() => document.getElementById('msgCopia').style.display = "none", 2000);
+  });
+}
+
+function limpar(){
+  contador = {};
+  ultimosNumeros = [];
+  document.querySelectorAll('.numero').forEach(el => {
+    el.className = 'numero';
+    el.querySelector('span').innerText = '';
+  });
+  document.getElementById('info').innerText = '';
+}
+
+criarTabela();
+</script>
+
+</body>
+</html>
