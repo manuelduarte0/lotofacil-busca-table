@@ -31,7 +31,7 @@
 .jogoSalvo { background:#222; padding:12px; margin:10px auto; border-radius:10px; max-width:400px; text-align:left; border:1px solid #9200D6; cursor:pointer; transition:0.2s; }
 .jogoSalvo:hover { background:#333; border-color:#9200D6; }
 
-.alerta { background:#ff9800; color:#000; padding:10px; border-radius:10px; margin:10px auto; max-width:400px; text-align:left; font-weight:bold; }
+.alerta { background:#ff9800; color:#000; padding:10px; border-radius:10px; margin:10px auto; max-width:400px; text-align:left; font-weight:bold; font-size:14px; }
 .boxBusca { background:#222; padding:15px; border-radius:10px; margin:15px auto; max-width:400px; border:2px solid #00BFFF; }
 
 .freqTabela { display:grid; grid-template-columns: repeat(5, 1fr); gap:5px; max-width:400px; margin:15px auto; }
@@ -168,7 +168,6 @@ function mostrar(data){
   data.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
 }
 
-// CORRIGIDA: Volta pra tela de pesquisa e mostra 1 jogo só
 function carregarJogoNaTabela(jogo){
   voltarPesquisa();
   limparTabela();
@@ -231,17 +230,53 @@ function contarIguais(arr1, arr2){
   return arr1.filter(n => arr2.includes(n)).length;
 }
 
+// NOVA FUNÇÃO: Verifica 2 em 2 E 3 ou mais juntos
 function verificarDuplicidade(jogos){
   let alertas = [];
+
+  // 1. Alerta de 2 em 2 com 10+ iguais
   for(let i=0; i<jogos.length; i++){
     for(let j=i+1; j<jogos.length; j++){
       let iguais = contarIguais(jogos[i].dezenas, jogos[j].dezenas);
       if(iguais >= 10){
-        alertas.push(`⚠️ <b>${jogos[i].concurso} vs ${jogos[j].concurso}</b>: ${iguais} números iguais`);
+        alertas.push(`⚠️ <b>2 Jogos:</b> ${jogos[i].concurso} vs ${jogos[j].concurso} = ${iguais} iguais`);
       }
     }
   }
-  return alertas;
+
+  // 2. NOVA: Alerta de 3 ou mais jogos com 5+ números iguais entre eles
+  for(let i=0; i<jogos.length; i++){
+    for(let j=i+1; j<jogos.length; j++){
+      for(let k=j+1; k<jogos.length; k++){
+        let grupo3 = [jogos[i], jogos[j], jogos[k]];
+        let numsComuns = grupo3[0].dezenas.filter(n =>
+          grupo3[1].dezenas.includes(n) && grupo3[2].dezenas.includes(n)
+        );
+        if(numsComuns.length >= 5){ // só mostra se tiver 5 ou mais iguais
+          alertas.push(`🔥 <b>3 Jogos:</b> ${grupo3.map(g=>g.concurso).join(', ')} = ${numsComuns.length} iguais: ${numsComuns.join(', ')}`);
+        }
+      }
+    }
+  }
+
+  // 3. NOVA: Alerta de 4 ou mais jogos
+  for(let i=0; i<jogos.length; i++){
+    for(let j=i+1; j<jogos.length; j++){
+      for(let k=j+1; k<jogos.length; k++){
+        for(let l=k+1; l<jogos.length; l++){
+          let grupo4 = [jogos[i], jogos[j], jogos[k], jogos[l]];
+          let numsComuns = grupo4[0].dezenas.filter(n =>
+            grupo4[1].dezenas.includes(n) && grupo4[2].dezenas.includes(n) && grupo4[3].dezenas.includes(n)
+          );
+          if(numsComuns.length >= 5){
+            alertas.push(`💥 <b>4 Jogos:</b> ${grupo4.map(g=>g.concurso).join(', ')} = ${numsComuns.length} iguais: ${numsComuns.join(', ')}`);
+          }
+        }
+      }
+    }
+  }
+
+  return alertas.slice(0, 10); // limita a 10 alertas pra não travar
 }
 
 function calcularFrequencia(jogos){
@@ -332,7 +367,7 @@ function abrirPastaPadrao(padrao){
 
   let duplicatas = verificarDuplicidade(jogosDoPadrao);
   if(duplicatas.length > 0){
-    html += `<div class="alerta"><b>🔍 Alerta de Similaridade:</b><br>${duplicatas.join('<br>')}</div>`;
+    html += `<div class="alerta"><b>🔍 ALERTA DE SIMILARIDADE:</b><br>${duplicatas.join('<br>')}</div>`;
   }
 
   jogosDoPadrao.forEach(j => {
