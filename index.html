@@ -23,6 +23,7 @@
 .btnNav { background:#00BFFF; }
 .btnApagar { background:#ff0000; padding:5px 10px; font-size:12px; margin-top:5px; }
 .btnVoltarPasta { background:#555; }
+.btnInteligente { background:#00BFFF; }
 
 .tabela { display:grid; grid-template-columns: repeat(5, 1fr); gap:5px; max-width:300px; margin:20px auto; }
 .numero { width:100%; aspect-ratio:1/1; border:1px solid #444; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; background:#222; }
@@ -38,6 +39,9 @@
 .freqItem { background:#222; border:1px solid #9200D6; border-radius:8px; padding:8px 5px; }
 .freqNum { font-size:18px; font-weight:bold; color:#9200D6; }
 .freqQtd { font-size:14px; }
+
+.resultadoInteligente { background:#111; border:2px solid #00BFFF; padding:10px; margin:8px 0; border-radius:8px; text-align:left; }
+.resultadoInteligente b { color:#00BFFF; }
 
 .oculto { display:none; }
 </style>
@@ -75,6 +79,7 @@
   <input type="text" id="buscaCombo" class="inputBusca" placeholder="Ex: 03,10,11,15,19,22">
   <br>
   <button onclick="buscarCombinacao()">BUSCAR NA PASTA</button>
+  <button class="btnInteligente" onclick="buscarInteligente()">🧠 BUSCA INTELIGENTE</button>
   <div id="resultadoBusca"></div>
  </div>
 
@@ -230,11 +235,8 @@ function contarIguais(arr1, arr2){
   return arr1.filter(n => arr2.includes(n)).length;
 }
 
-// NOVA FUNÇÃO: Verifica 2 em 2 E 3 ou mais juntos
 function verificarDuplicidade(jogos){
   let alertas = [];
-
-  // 1. Alerta de 2 em 2 com 10+ iguais
   for(let i=0; i<jogos.length; i++){
     for(let j=i+1; j<jogos.length; j++){
       let iguais = contarIguais(jogos[i].dezenas, jogos[j].dezenas);
@@ -243,8 +245,6 @@ function verificarDuplicidade(jogos){
       }
     }
   }
-
-  // 2. NOVA: Alerta de 3 ou mais jogos com 5+ números iguais entre eles
   for(let i=0; i<jogos.length; i++){
     for(let j=i+1; j<jogos.length; j++){
       for(let k=j+1; k<jogos.length; k++){
@@ -252,31 +252,13 @@ function verificarDuplicidade(jogos){
         let numsComuns = grupo3[0].dezenas.filter(n =>
           grupo3[1].dezenas.includes(n) && grupo3[2].dezenas.includes(n)
         );
-        if(numsComuns.length >= 5){ // só mostra se tiver 5 ou mais iguais
+        if(numsComuns.length >= 5){
           alertas.push(`🔥 <b>3 Jogos:</b> ${grupo3.map(g=>g.concurso).join(', ')} = ${numsComuns.length} iguais: ${numsComuns.join(', ')}`);
         }
       }
     }
   }
-
-  // 3. NOVA: Alerta de 4 ou mais jogos
-  for(let i=0; i<jogos.length; i++){
-    for(let j=i+1; j<jogos.length; j++){
-      for(let k=j+1; k<jogos.length; k++){
-        for(let l=k+1; l<jogos.length; l++){
-          let grupo4 = [jogos[i], jogos[j], jogos[k], jogos[l]];
-          let numsComuns = grupo4[0].dezenas.filter(n =>
-            grupo4[1].dezenas.includes(n) && grupo4[2].dezenas.includes(n) && grupo4[3].dezenas.includes(n)
-          );
-          if(numsComuns.length >= 5){
-            alertas.push(`💥 <b>4 Jogos:</b> ${grupo4.map(g=>g.concurso).join(', ')} = ${numsComuns.length} iguais: ${numsComuns.join(', ')}`);
-          }
-        }
-      }
-    }
-  }
-
-  return alertas.slice(0, 10); // limita a 10 alertas pra não travar
+  return alertas.slice(0, 10);
 }
 
 function calcularFrequencia(jogos){
@@ -306,6 +288,64 @@ function buscarCombinacao(){
     }
   });
   if(html == `<h4>Resultado da busca:</h4>`) html += `<p>Nenhum jogo bateu</p>`;
+  document.getElementById('resultadoBusca').innerHTML = html;
+}
+
+// NOVA FUNÇÃO: BUSCA INTELIGENTE
+function buscarInteligente(){
+  let jogos = getJogosDaFaixa(faixaAberta);
+  if(jogos.length < 3) return alert("Precisa de no mínimo 3 jogos salvos");
+
+  let mapaCombinacoes = {};
+
+  // Gera todas combinações de 5 números de cada jogo
+  jogos.forEach(jogo => {
+    let dezenas = jogo.dezenas;
+    for(let i=0; i<dezenas.length-4; i++){
+      for(let j=i+1; j<dezenas.length-3; j++){
+        for(let k=j+1; k<dezenas.length-2; k++){
+          for(let l=k+1; l<dezenas.length-1; l++){
+            for(let m=l+1; m<dezenas.length; m++){
+              let combo = [dezenas[i], dezenas[j], dezenas[k], dezenas[l], dezenas[m]].sort();
+              let chave = combo.join(',');
+              if(!mapaCombinacoes[chave]) mapaCombinacoes[chave] = [];
+              mapaCombinacoes[chave].push(jogo.concurso);
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Filtra só as que apareceram em 3 ou mais jogos
+  let resultados = [];
+  for(let chave in mapaCombinacoes){
+    if(mapaCombinacoes[chave].length >= 3){
+      resultados.push({
+        combo: chave.split(','),
+        qtd: mapaCombinacoes[chave].length,
+        concursos: [...new Set(mapaCombinacoes[chave])].sort((a,b)=>a-b)
+      });
+    }
+  }
+
+  // Ordena por quantidade de repetições
+  resultados.sort((a,b) => b.qtd - a.qtd);
+
+  let html = `<h4>🧠 BUSCA INTELIGENTE - Sequências de 5+ que saíram em 3+ jogos</h4>`;
+
+  if(resultados.length == 0){
+    html += `<p>Nenhuma sequência de 5 números se repetiu 3 vezes</p>`;
+  } else {
+    resultados.slice(0, 20).forEach(r => {
+      html += `<div class="resultadoInteligente">
+        <b>Sequência:</b> ${r.combo.join(', ')}<br>
+        <b>Repetiu:</b> ${r.qtd} vezes<br>
+        <b>Concursos:</b> ${r.concursos.join(', ')}
+      </div>`;
+    });
+  }
+
   document.getElementById('resultadoBusca').innerHTML = html;
 }
 
