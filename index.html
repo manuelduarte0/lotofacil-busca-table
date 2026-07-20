@@ -17,6 +17,7 @@
 .conteudo { padding:60px 15px 15px 15px; text-align:center; }
  h1 { color:#9200D6; }
  input { width:100px; padding:10px; border-radius:8px; border:2px solid #9200D6; background:#222; color:white; text-align:center; margin:3px; }
+.inputBusca { width:300px; }
  button { padding:10px 15px; background:#9200D6; border:none; border-radius:10px; cursor:pointer; font-weight:bold; margin:5px; color:#fff; }
 .btnNav { background:#00BFFF; }
 .btnApagar { background:#ff0000; padding:5px 10px; font-size:12px; margin-top:5px; }
@@ -26,7 +27,17 @@
 .sorteado { background:#9200D6!important; }
 
 .jogoSalvo { background:#222; padding:12px; margin:10px auto; border-radius:10px; max-width:400px; text-align:left; border:1px solid #9200D6; cursor:pointer; transition:0.2s; }
-.jogoSalvo:hover { background:#333; border-color:#9200D6; } /* fica clicável */
+.jogoSalvo:hover { background:#333; border-color:#9200D6; }
+
+.alerta { background:#ff9800; color:#000; padding:10px; border-radius:10px; margin:10px auto; max-width:400px; text-align:left; font-weight:bold; }
+.boxBusca { background:#222; padding:15px; border-radius:10px; margin:15px auto; max-width:400px; border:2px solid #00BFFF; }
+
+/* TABELA FREQUENCIA */
+.freqTabela { display:grid; grid-template-columns: repeat(5, 1fr); gap:5px; max-width:400px; margin:15px auto; }
+.freqItem { background:#222; border:1px solid #9200D6; border-radius:8px; padding:8px 5px; }
+.freqNum { font-size:18px; font-weight:bold; color:#9200D6; }
+.freqQtd { font-size:14px; }
+
 .oculto { display:none; }
 </style>
 </head>
@@ -57,6 +68,18 @@
 
 <div class="conteudo oculto" id="telaPasta">
  <button onclick="voltarPesquisa()">⬅ VOLTAR</button>
+
+ <div class="boxBusca">
+  <h3>🔍 BUSCAR COMBINAÇÃO</h3>
+  <input type="text" id="buscaCombo" class="inputBusca" placeholder="Ex: 03,10,11,15,19,22">
+  <br>
+  <button onclick="buscarCombinacao()">BUSCAR NA PASTA</button>
+  <div id="resultadoBusca"></div>
+ </div>
+
+ <h3>📊 FREQUÊNCIA DOS NÚMEROS</h3>
+ <div class="freqTabela" id="tabelaFrequencia"></div>
+
  <div id="areaPastas"></div>
 </div>
 
@@ -64,6 +87,7 @@
 const API = "https://loteriascaixa-api.herokuapp.com/api/lotofacil/";
 let jogoAtual = {};
 let banco = JSON.parse(localStorage.getItem('lotofacilBanco')) || {};
+let pastaAberta = "";
 const pastasLista = ['4.7.4','5.5.5','5.6.4','6.5.4','6.7.2','7.6.2','6.6.3','5.7.3','7.5.3','7.6.2'];
 
 function criarTabela(){
@@ -96,21 +120,6 @@ function analisarPadrao(dezenas){
   return {padrao: `${g0}.${g1}.${g2}`, pares, impares, dezenas};
 }
 
-async function buscarIntervalo(){
-  let de = parseInt(document.getElementById('de').value);
-  let ate = parseInt(document.getElementById('ate').value);
-  if(!de) return alert("Digite um concurso");
-  document.getElementById('info').innerText = `Buscando ${de} até ${ate}...`;
-  limparTabela();
-  for(let i = de; i <= ate; i++){
-    try{
-      let res = await fetch(API + i);
-      let data = await res.json();
-      if(!data.erro) mostrar(data);
-    }catch(e){}
-  }
-}
-
 async function ultimo(){
   let res = await fetch(API + "latest");
   let data = await res.json();
@@ -128,7 +137,6 @@ function mostrar(data){
   data.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
 }
 
-// NOVA FUNÇÃO: Carregar jogo salvo na tabela
 function carregarJogoNaTabela(jogo){
   voltarPesquisa();
   limparTabela();
@@ -178,7 +186,7 @@ function anterior(){
 }
 
 function apagarJogo(pasta, concurso, event){
-  event.stopPropagation(); // evita abrir o jogo ao clicar em apagar
+  event.stopPropagation();
   if(confirm(`Apagar concurso ${concurso} da pasta ${pasta}?`)){
     banco[pasta] = banco[pasta].filter(j => j.concurso!= concurso);
     localStorage.setItem('lotofacilBanco', JSON.stringify(banco));
@@ -187,13 +195,74 @@ function apagarJogo(pasta, concurso, event){
   }
 }
 
+function contarIguais(arr1, arr2){
+  return arr1.filter(n => arr2.includes(n)).length;
+}
+
+function verificarDuplicidade(jogos){
+  let alertas = [];
+  for(let i=0; i<jogos.length; i++){
+    for(let j=i+1; j<jogos.length; j++){
+      let iguais = contarIguais(jogos[i].dezenas, jogos[j].dezenas);
+      if(iguais >= 10){
+        alertas.push(`⚠️ <b>${jogos[i].concurso} vs ${jogos[j].concurso}</b>: ${iguais} números iguais`);
+      }
+    }
+  }
+  return alertas;
+}
+
+// NOVA FUNÇÃO: CALCULA FREQUENCIA
+function calcularFrequencia(jogos){
+  let freq = {};
+  for(let i=1; i<=25; i++) freq[i.toString().padStart(2,'0')] = 0;
+
+  jogos.forEach(j => {
+    j.dezenas.forEach(n => freq[n]++);
+  });
+
+  let html = "";
+  for(let i=1; i<=25; i++){
+    let num = i.toString().padStart(2,'0');
+    html += `<div class="freqItem"><div class="freqNum">${num}</div><div class="freqQtd">${freq[num]}x</div></div>`;
+  }
+  document.getElementById('tabelaFrequencia').innerHTML = html;
+}
+
+function buscarCombinacao(){
+  let texto = document.getElementById('buscaCombo').value;
+  if(!texto) return alert("Digite os números");
+  let combo = texto.split(',').map(n => n.trim().padStart(2,'0'));
+  let jogos = banco[pastaAberta] || [];
+  let html = `<h4>Resultado da busca:</h4>`;
+
+  jogos.forEach(j => {
+    let acertos = contarIguais(combo, j.dezenas);
+    if(acertos > 0){
+      html += `<p><b>Concurso ${j.concurso}:</b> ${acertos} acertos</p>`;
+    }
+  });
+  if(html == `<h4>Resultado da busca:</h4>`) html += `<p>Nenhum jogo bateu</p>`;
+  document.getElementById('resultadoBusca').innerHTML = html;
+}
+
 function abrirPasta(pasta){
+  pastaAberta = pasta;
   toggleMenu();
   document.getElementById('telaPesquisa').classList.add('oculto');
   document.getElementById('telaPasta').classList.remove('oculto');
+  document.getElementById('resultadoBusca').innerHTML = "";
 
   let jogos = banco[pasta] || [];
+  calcularFrequencia(jogos); // ATUALIZA TABELA
+
   let html = `<h2>📁 Pasta ${pasta} - ${jogos.length} jogos</h2>`;
+
+  let duplicatas = verificarDuplicidade(jogos);
+  if(duplicatas.length > 0){
+    html += `<div class="alerta"><b>🔍 Alerta de Similaridade:</b><br>${duplicatas.join('<br>')}</div>`;
+  }
+
   if(jogos.length == 0) html += "<p>Nenhum jogo salvo aqui</p>";
 
   jogos.forEach(j => {
