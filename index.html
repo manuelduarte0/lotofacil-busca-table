@@ -42,6 +42,7 @@
 
 .resultadoInteligente { background:#111; border:2px solid #00BFFF; padding:10px; margin:8px 0; border-radius:8px; text-align:left; }
 .resultadoInteligente b { color:#00BFFF; }
+.formulaZUD { color:#00BFFF; font-weight:bold; font-size:15px; }
 
 .oculto { display:none; }
 </style>
@@ -138,13 +139,32 @@ function contarJogosNaFaixa(faixa){
 
 function toggleMenu(){ document.getElementById('menuLateral').classList.toggle('ativo'); }
 
+// NOVA FUNÇÃO: Calcula Z-U-D
+function calcularZUD(dezenas){
+  let z = dezenas.filter(n => parseInt(n) <= 9);
+  let u = dezenas.filter(n => parseInt(n) >= 10 && parseInt(n) <= 19);
+  let d = dezenas.filter(n => parseInt(n) >= 20);
+
+  let zPar = z.filter(n => parseInt(n) % 2 == 0).length;
+  let zImpar = z.length - zPar;
+
+  let uPar = u.filter(n => parseInt(n) % 2 == 0).length;
+  let uImpar = u.length - uPar;
+
+  let dPar = d.filter(n => parseInt(n) % 2 == 0).length;
+  let dImpar = d.length - dPar;
+
+  return `Z ${zPar}-${zImpar} | U ${uPar}-${uImpar} | D ${dPar}-${dImpar}`;
+}
+
 function analisarPadrao(dezenas){
   let g0 = dezenas.filter(n => parseInt(n) <= 9).length;
   let g1 = dezenas.filter(n => parseInt(n) >= 10 && parseInt(n) <= 19).length;
   let g2 = dezenas.filter(n => parseInt(n) >= 20).length;
   let pares = dezenas.filter(n => parseInt(n) % 2 == 0).length;
   let impares = 15 - pares;
-  return {padrao: `${g0}.${g1}.${g2}`, pares, impares, dezenas};
+  let formulaZUD = calcularZUD(dezenas);
+  return {padrao: `${g0}.${g1}.${g2}`, pares, impares, dezenas, formulaZUD};
 }
 
 async function buscarIntervalo(){
@@ -169,7 +189,11 @@ function mostrar(data){
   jogoAtual = analisarPadrao(data.dezenas);
   jogoAtual.concurso = data.concurso;
   jogoAtual.data = data.data;
-  document.getElementById('info').innerHTML = `<h2>Concurso ${data.concurso} - ${data.data}</h2><p><b>Padrão:</b> ${jogoAtual.padrao} | <b>Pares:</b> ${jogoAtual.pares} | <b>Ímpares:</b> ${jogoAtual.impares}</p>`;
+  document.getElementById('info').innerHTML = `
+  <h2>Concurso ${data.concurso} - ${data.data}</h2>
+  <p><b>Padrão:</b> ${jogoAtual.padrao} | <b>Pares:</b> ${jogoAtual.pares} | <b>Ímpares:</b> ${jogoAtual.impares}</p>
+  <p class="formulaZUD"><b>Fórmula:</b> ${jogoAtual.formulaZUD}</p>
+  `;
   data.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
 }
 
@@ -179,7 +203,11 @@ function carregarJogoNaTabela(jogo){
   jogoAtual = jogo;
   document.getElementById('de').value = jogo.concurso;
   document.getElementById('ate').value = jogo.concurso;
-  document.getElementById('info').innerHTML = `<h2>Concurso ${jogo.concurso} - ${jogo.data}</h2><p><b>Padrão:</b> ${jogo.padrao} | <b>Pares:</b> ${jogo.pares} | <b>Ímpares:</b> ${jogo.impares}</p>`;
+  document.getElementById('info').innerHTML = `
+  <h2>Concurso ${jogo.concurso} - ${jogo.data}</h2>
+  <p><b>Padrão:</b> ${jogo.padrao} | <b>Pares:</b> ${jogo.pares} | <b>Ímpares:</b> ${jogo.impares}</p>
+  <p class="formulaZUD"><b>Fórmula:</b> ${jogo.formulaZUD}</p>
+  `;
   jogo.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
 }
 
@@ -291,15 +319,12 @@ function buscarCombinacao(){
   document.getElementById('resultadoBusca').innerHTML = html;
 }
 
-// CORRIGIDA: BUSCA INTELIGENTE SÓ DO PADRÃO ABERTO
 function buscarInteligente(){
   if(!pastaAberta) return alert("Abra um padrão primeiro");
   let jogos = getJogosDoPadrao(pastaAberta);
   if(jogos.length < 3) return alert(`Precisa de no mínimo 3 jogos no padrão ${pastaAberta}`);
 
   let mapaCombinacoes = {};
-
-  // Gera todas combinações de 5 números de cada jogo do PADRÃO
   jogos.forEach(jogo => {
     let dezenas = jogo.dezenas;
     for(let i=0; i<dezenas.length-4; i++){
@@ -318,7 +343,6 @@ function buscarInteligente(){
     }
   });
 
-  // Filtra só as que apareceram em 3 ou mais jogos
   let resultados = [];
   for(let chave in mapaCombinacoes){
     if(mapaCombinacoes[chave].length >= 3){
@@ -329,7 +353,6 @@ function buscarInteligente(){
       });
     }
   }
-
   resultados.sort((a,b) => b.qtd - a.qtd);
 
   let html = `<h4>🧠 BUSCA INTELIGENTE - Padrão ${pastaAberta}</h4>`;
@@ -346,7 +369,6 @@ function buscarInteligente(){
       </div>`;
     });
   }
-
   document.getElementById('resultadoBusca').innerHTML = html;
 }
 
@@ -401,7 +423,6 @@ function abrirFaixa(faixa){
 function abrirPastaPadrao(padrao){
   pastaAberta = padrao;
   let jogosDoPadrao = getJogosDoPadrao(padrao);
-
   let tituloFaixa = faixaAberta == 'TODOS'? 'TODOS' : `${faixaAberta} a ${parseInt(faixaAberta)+99}`;
 
   let html = `<button onclick="abrirFaixa('${faixaAberta}')">⬅ VOLTAR FAIXA</button>`;
@@ -418,6 +439,7 @@ function abrirPastaPadrao(padrao){
       <b>Concurso:</b> ${j.concurso} - ${j.data}<br>
       <b>Números:</b> ${j.dezenas.join(", ")}<br>
       <b>Pares:</b> ${j.pares} | <b>Ímpares:</b> ${j.impares}<br>
+      <span class="formulaZUD"><b>Fórmula:</b> ${j.formulaZUD}</span><br>
       <button onclick="event.stopPropagation(); navigator.clipboard.writeText('${j.dezenas.join(", ")}')">📋 Copiar</button>
       <button class="btnApagar" onclick="apagarJogo('${padrao}', ${j.concurso}, event)">🗑️ Apagar</button>
     </div>
