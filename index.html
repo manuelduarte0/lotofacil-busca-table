@@ -70,6 +70,9 @@
 <div class="conteudo oculto" id="telaPasta">
  <button class="btnVoltarPasta" onclick="voltarMenuPrincipal()">⬅ VOLTAR PASTAS</button>
 
+ <div id="info"></div>
+ <div class="tabela" id="tabelaPasta"></div>
+
  <div class="boxBusca">
   <h3>🔍 BUSCAR COMBINAÇÃO</h3>
   <input type="text" id="buscaCombo" class="inputBusca" placeholder="Ex: 03,10,11,15,19,22">
@@ -102,10 +105,13 @@ function gerarFaixas(){
 
 function criarTabela(){
   const tabela = document.getElementById('tabela');
+  const tabelaPasta = document.getElementById('tabelaPasta');
   tabela.innerHTML = "";
+  tabelaPasta.innerHTML = "";
   for(let i = 1; i <= 25; i++){
     let num = i.toString().padStart(2, '0');
     tabela.innerHTML += `<div class="numero" id="n${num}">${num}</div>`;
+    tabelaPasta.innerHTML += `<div class="numero" id="np${num}">${num}</div>`;
   }
   montarMenuPrincipal();
 }
@@ -169,16 +175,18 @@ function mostrar(data){
 }
 
 function carregarJogoNaTabela(jogo){
-  voltarPesquisa();
-  limparTabela();
+  limparTabelaPasta();
   jogoAtual = jogo;
-  document.getElementById('de').value = jogo.concurso;
-  document.getElementById('ate').value = jogo.concurso;
+
   document.getElementById('info').innerHTML = `<h2>Concurso ${jogo.concurso} - ${jogo.data}</h2><p><b>Padrão:</b> ${jogo.padrao} | <b>Pares:</b> ${jogo.pares} | <b>Ímpares:</b> ${jogo.impares}</p>`;
-  jogo.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
+
+  jogo.dezenas.forEach(n => document.getElementById('np' + n).classList.add('sorteado'));
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function limparTabela(){ document.querySelectorAll('.numero').forEach(el => el.classList.remove('sorteado')); }
+function limparTabela(){ document.querySelectorAll('#tabela.numero').forEach(el => el.classList.remove('sorteado')); }
+function limparTabelaPasta(){ document.querySelectorAll('#tabelaPasta.numero').forEach(el => el.classList.remove('sorteado')); }
 
 function copiarNumeros(){
   if(!jogoAtual.dezenas) return alert("Pesquise primeiro");
@@ -293,6 +301,8 @@ function abrirFaixa(faixa){
   document.getElementById('telaPesquisa').classList.add('oculto');
   document.getElementById('telaPasta').classList.remove('oculto');
   document.getElementById('resultadoBusca').innerHTML = "";
+  document.getElementById('info').innerHTML = "";
+  limparTabelaPasta();
 
   let jogosDaFaixa = getJogosDaFaixa(faixa);
   let tituloFaixa = faixa == 'TODOS'? 'TODOS OS CONCURSOS' : `Concursos ${faixa} a ${parseInt(faixa)+99}`;
@@ -317,7 +327,6 @@ function abrirFaixa(faixa){
   calcularFrequencia(jogosDaFaixa);
 }
 
-// CORRIGIDA AQUI
 function abrirPastaPadrao(padrao){
   pastaAberta = padrao;
   let jogosDoPadrao = banco[padrao]? banco[padrao].filter(j => {
