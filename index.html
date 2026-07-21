@@ -605,3 +605,138 @@ criarTabela();
 
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Analisador Lotofácil PRO V3</title>
+<style>
+body{background:#0A0A0A;color:white;font-family:Arial;margin:0;padding:0}
+.btnMenu{position:fixed;top:10px;left:10px;z-index:1000;font-size:28px;background:#9200D6;border:none;color:white;padding:8px 14px;border-radius:8px;cursor:pointer}
+.menu{position:fixed;left:-220px;top:0;width:200px;height:100%;background:#111;padding:15px;border-right:2px solid #9200D6;transition:.3s;z-index:999;overflow-y:auto}
+.menu.ativo{left:0}.menu h3{color:#9200D6;text-align:center}
+.pasta{padding:12px;margin:6px 0;background:#222;border-radius:8px;cursor:pointer;text-align:center;font-weight:bold;display:flex;justify-content:space-between}
+.pasta:hover{background:#9200D6}.pasta span{font-size:12px;color:#aaa}.pastaMae{background:#9200D6;border:2px solid #00BFFF}
+.conteudo{padding:60px 15px 15px 15px;text-align:center}h1{color:#9200D6}
+input{width:100px;padding:10px;border-radius:8px;border:2px solid #9200D6;background:#222;color:white;text-align:center;margin:3px}
+.inputBusca{width:300px}button{padding:10px 15px;background:#9200D6;border:none;border-radius:10px;cursor:pointer;font-weight:bold;margin:5px;color:#fff}
+.btnNav{background:#00BFFF}.btnApagar{background:red;padding:5px 10px;font-size:12px;margin-top:5px}
+.btnVoltarPasta{background:#555}.btnInteligente{background:#00BFFF}
+.btnFormula{background:#00FF7F;color:#000}.btnFormulaZUD{background:#FF00FF;color:#000}.btnGerador{background:#FFD700;color:#000}
+.tabela{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:300px;margin:20px auto}
+.numero{width:100%;aspect-ratio:1/1;border:1px solid #444;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;background:#222;cursor:pointer}
+.sorteado{background:#9200D6!important}.numeroFixo{background:#FFD700!important;color:#000!important}
+.jogoSalvo{background:#222;padding:12px;margin:10px auto;border-radius:10px;max-width:400px;text-align:left;border:1px solid #9200D6;cursor:pointer}
+.jogoSalvo:hover{background:#333}.alerta{background:#ff9800;color:#000;padding:10px;border-radius:10px;margin:10px auto;max-width:400px;text-align:left;font-weight:bold;font-size:14px}
+.boxBusca{background:#222;padding:15px;border-radius:10px;margin:15px auto;max-width:400px;border:2px solid #00BFFF}
+.boxGerador{background:#222;padding:15px;border-radius:10px;margin:15px auto;max-width:450px;border:3px solid #FFD700}
+.freqTabela{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:400px;margin:15px auto}
+.freqItem{background:#222;border:1px solid #9200D6;border-radius:8px;padding:8px 5px;text-align:center}
+.freqNum{font-size:18px;font-weight:bold;color:#9200D6}.freqQtd{font-size:14px}
+.resultadoInteligente{background:#111;border:2px solid #00BFFF;padding:10px;margin:8px 0;border-radius:8px;text-align:left}
+.resultadoFormula{background:#111;border:2px solid #00FF7F;padding:10px;margin:8px 0;border-radius:8px;text-align:left}
+.resultadoFormulaZUD{background:#111;border:2px solid #FF00FF;padding:10px;margin:8px 0;border-radius:8px;text-align:left}
+.resultadoGerado{background:#111;border:3px solid #FFD700;padding:12px;margin:10px 0;border-radius:10px;text-align:left}
+.formulaZUD{color:#00BFFF;font-weight:bold}.formula5x5{color:#00FF7F;font-weight:bold}
+.selecaoAtiva{background:#FFD700!important;color:#000!important;border-color:#FFD700!important}
+.listaOpcoes{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:10px 0}
+.btnOpcao{padding:8px 10px;background:#333;border:2px solid #555;border-radius:8px;cursor:pointer;font-size:12px}
+.gridNumeros{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:300px;margin:10px auto}
+.oculto{display:none}
+</style>
+</head>
+<body>
+<button class="btnMenu" onclick="toggleMenu()">☰</button>
+<div class="menu" id="menuLateral"><h3>📁 PASTAS</h3><div id="listaPastas"></div></div>
+
+<div class="conteudo" id="telaPesquisa">
+<h1>🎯 Analisador Lotofácil PRO</h1>
+De: <input type="number" id="de"> Até: <input type="number" id="ate"><br>
+<button onclick="buscarIntervalo()">🔍 PESQUISAR</button><button onclick="ultimo()">ULTIMO</button>
+<button onclick="copiarNumeros()">📋 COPIAR</button><button onclick="salvarJogo()">💾 SALVAR</button><br>
+<button class="btnNav" onclick="anterior()">⬅ ANTERIOR</button><button class="btnNav" onclick="proximo()">PRÓXIMO ➡</button>
+<div id="info"></div><div class="tabela" id="tabela"></div>
+</div>
+
+<div class="conteudo oculto" id="telaPasta">
+<button class="btnVoltarPasta" onclick="voltarMenuPrincipal()">⬅ VOLTAR PASTAS</button>
+<div class="boxBusca"><h3>🔍 BUSCAR COMBINAÇÃO</h3><input type="text" id="buscaCombo" class="inputBusca" placeholder="Ex: 1,2,3 ou 4.7.4"><br>
+<button onclick="buscarCombinacao()">BUSCAR</button><button class="btnInteligente" onclick="buscarInteligente()">🧠 INTELIGENTE</button></div>
+
+<div class="boxGerador"><h3>🎰 GERADOR INTELIGENTE</h3>
+<h4>🎯 5x5</h4><div id="lista5x5" class="listaOpcoes"></div>
+<h4>🟣 ZUD</h4><div id="listaZUD" class="listaOpcoes"></div>
+<h4>⚖️ Par/Ímpar</h4><div id="listaPI" class="listaOpcoes"></div>
+<h4>📌 ATÉ 7 NÚMEROS FIXOS</h4><div id="gridInserir" class="gridNumeros"></div>
+<button onclick="limparInserir()">LIMPAR FIXOS</button>
+<button class="btnGerador" onclick="gerarJogoInteligente()">GERAR JOGO</button>
+<div id="resultadoGerador"></div></div>
+
+<div id="resultadoBusca"></div><h3>📊 FREQUÊNCIA</h3><div class="freqTabela" id="tabelaFrequencia"></div><div id="areaPastas"></div></div>
+
+<script>
+const API="https://loteriascaixa-api.herokuapp.com/api/lotofacil/";
+let jogoAtual={},banco=JSON.parse(localStorage.getItem('lotofacilBanco'))||{},pastaAberta="",faixaAberta="",filtro5x5=null,filtroZUD=null,filtroPI=null,numerosFixos=[],filtroSorteados=null;
+const padroesLista=['4.7.4','5.5.5','5.6.4','6.5.4','6.7.2','7.6.2','6.6.3','5.7.3','7.5.3','7.6.2','3.8.4','8.4.3'],opcoesPI=['6.9','7.8','8.7','9.6'];
+
+function gerarFaixas(){let f=['TODOS'];for(let i=3101;i<=4001;i+=100)f.push(i);return f}
+function criarTabela(){const t=document.getElementById('tabela');t.innerHTML="";for(let i=1;i<=25;i++){let n=i.toString().padStart(2,'0');t.innerHTML+=`<div class="numero" id="n${n}">${n}</div>`}montarMenuPrincipal();montarGridInserir();montarOpcoesGerador()}
+function montarGridInserir(){let h="";for(let i=1;i<=25;i++){let n=i.toString().padStart(2,'0');h+=`<div class="numero" id="ins${n}" onclick="toggleNumeroFixo('${n}')">${n}</div>`}document.getElementById('gridInserir').innerHTML=h}
+function toggleNumeroFixo(n){if(numerosFixos.includes(n)){numerosFixos=numerosFixos.filter(x=>x!=n);document.getElementById('ins'+n).classList.remove('numeroFixo')}else{if(numerosFixos.length>=7)return alert("Max 7 numeros");numerosFixos.push(n);document.getElementById('ins'+n).classList.add('numeroFixo')}}
+function limparInserir(){numerosFixos=[];document.querySelectorAll('#gridInserir.numero').forEach(e=>e.classList.remove('numeroFixo'))}
+
+function montarOpcoesGerador(){
+let h5x5="",hZUD="",hPI="";
+padroesLista.forEach(p=>{h5x5+=`<button class="btnOpcao" id="btn5x5_${p}" onclick="setFiltro5x5('${p}')">${p}</button>`});
+padroesLista.forEach(p=>{hZUD+=`<button class="btnOpcao" id="btnZUD_${p}" onclick="setFiltroZUD('${p}')">${p}</button>`});
+opcoesPI.forEach(p=>{hPI+=`<button class="btnOpcao" id="btnPI_${p}" onclick="setFiltroPI('${p}')">${p}</button>`});
+document.getElementById('lista5x5').innerHTML=h5x5;document.getElementById('listaZUD').innerHTML=hZUD;document.getElementById('listaPI').innerHTML=hPI;
+}
+function setFiltro5x5(p){filtro5x5=filtro5x5==p?null:p;atualizarBotoes()}
+function setFiltroZUD(p){filtroZUD=filtroZUD==p?null:p;atualizarBotoes()}
+function setFiltroPI(p){filtroPI=filtroPI==p?null:p;atualizarBotoes()}
+function atualizarBotoes(){document.querySelectorAll('.btnOpcao').forEach(b=>b.classList.remove('selecaoAtiva'));if(filtro5x5)document.getElementById('btn5x5_'+filtro5x5)?.classList.add('selecaoAtiva');if(filtroZUD)document.getElementById('btnZUD_'+filtroZUD)?.classList.add('selecaoAtiva');if(filtroPI)document.getElementById('btnPI_'+filtroPI)?.classList.add('selecaoAtiva')}
+
+function gerarJogoInteligente(){
+if(!filtro5x5&&!filtroZUD&&!filtroPI&&numerosFixos.length==0)return alert("Selecione pelo menos 1 filtro");
+let tentativas=0,jogo;
+while(tentativas<5000){
+jogo=gerarBase();
+if(numerosFixos.length>0){jogo=jogo.filter(n=>!numerosFixos.includes(n));jogo=[...numerosFixos,...jogo].slice(0,15)}
+jogo.sort((a,b)=>a-b);
+let p5x5=calcular5x5(jogo),pZUD=calcularPadraoZUD(jogo),pPI=`${jogo.filter(n=>n%2==0).length}.${jogo.filter(n=>n%2!=0).length}`;
+if((!filtro5x5||p5x5==filtro5x5)&&(!filtroZUD||pZUD==filtroZUD)&&(!filtroPI||pPI==filtroPI)){break}
+tentativas++
+}
+if(tentativas>=5000)return alert("Não achei combinação com esses filtros");
+mostrarGerado(jogo,p5x5,pZUD,pPI);
+}
+function gerarBase(){let nums=[],pool=Array.from({length:25},(_,i)=>(i+1).toString().padStart(2,'0'));while(nums.length<15){let n=pool.splice(Math.floor(Math.random()*pool.length),1)[0];nums.push(n)}return nums}
+function mostrarGerado(j,p5,pz,ppi){let h=`<div class="resultadoGerado"><h3>🎯 JOGO GERADO</h3><p><b>Números:</b> ${j.join(", ")}</p><p class="formula5x5">5x5: ${p5}</p><p class="formulaZUD">ZUD: ${pz}</p><p>Par/Ímpar: ${ppi}</p><button onclick="copiarJogo('${j.join(", ")}')">📋 COPIAR</button><button onclick="salvarJogoGerado('${j.join(", ")}')">💾 SALVAR</button></div>`;document.getElementById('resultadoGerador').innerHTML=h}
+
+function montarMenuPrincipal(){let h="";gerarFaixas().forEach(f=>{let q=contarJogosNaFaixa(f);h+=`<div class="pasta pastaMae" onclick="abrirFaixa('${f}')">${f} <span>${q} jogos</span></div>`});document.getElementById('listaPastas').innerHTML=h}
+function contarJogosNaFaixa(f){if(f=='TODOS')return Object.values(banco).flat().length;let i=parseInt(f),fim=i+99,t=0;Object.values(banco).forEach(p=>{t+=p.filter(j=>j.concurso>=i&&j.concurso<=fim).length});return t}
+function toggleMenu(){document.getElementById('menuLateral').classList.toggle('ativo')}
+function calcular5x5(d){return`${d.filter(n=>n>=1&&n<=5).length}.${d.filter(n=>n>=6&&n<=10).length}.${d.filter(n=>n>=11&&n<=15).length}.${d.filter(n=>n>=16&&n<=20).length}.${d.filter(n=>n>=21&&n<=25).length}`}
+function calcularZUD(d){let z=d.filter(n=>n<=9),u=d.filter(n=>n>=10&&n<=19),d2=d.filter(n=>n>=20);return`Z ${z.filter(n=>n%2==0).length}-${z.length-z.filter(n=>n%2==0).length} | U ${u.filter(n=>n%2==0).length}-${u.length-u.filter(n=>n%2==0).length} | D ${d2.filter(n=>n%2==0).length}-${d2.length-d2.filter(n=>n%2==0).length}`}
+function calcularPadraoZUD(d){return`${d.filter(n=>n<=9).length}.${d.filter(n=>n>=10&&n<=19).length}.${d.filter(n=>n>=20).length}`}
+function analisarPadrao(d){return{padrao:calcularPadraoZUD(d),pares:d.filter(n=>n%2==0).length,impares:15-d.filter(n=>n%2==0).length,dezenas:d,formulaZUD:calcularZUD(d),formula5x5:calcular5x5(d)}}
+async function buscarIntervalo(){let d=document.getElementById('de').value,a=document.getElementById('ate').value;if(!d||!a)return alert("Preencha");let r=await fetch(API+d),data=await r.json();mostrar(data)}
+async function ultimo(){let r=await fetch(API+"latest"),data=await r.json();document.getElementById('de').value=data.concurso;document.getElementById('ate').value=data.concurso;mostrar(data)}
+function mostrar(d){document.querySelectorAll('.numero').forEach(e=>e.classList.remove('sorteado'));jogoAtual=analisarPadrao(d.dezenas.map(Number));jogoAtual.concurso=d.concurso;jogoAtual.data=d.data;document.getElementById('info').innerHTML=`<h2>Concurso ${d.concurso}</h2><p class="formula5x5">5x5: ${jogoAtual.formula5x5}</p><p class="formulaZUD">ZUD: ${jogoAtual.formulaZUD}</p>`;d.dezenas.forEach(n=>document.getElementById('n'+n).classList.add('sorteado'))}
+function copiarNumeros(){navigator.clipboard.writeText(jogoAtual.dezenas.join(", "));alert("Copiado!")}
+function copiarJogo(j){navigator.clipboard.writeText(j);alert("Jogo copiado!")}
+function salvarJogo(){let p=jogoAtual.padrao;if(!banco[p])banco[p]=[];banco[p].push(jogoAtual);localStorage.setItem('lotofacilBanco',JSON.stringify(banco));montarMenuPrincipal();alert("Salvo!")}
+function salvarJogoGerado(j){let nums=j.split(", ").map(Number);let analise=analisarPadrao(nums);analise.concurso="GERADO";analise.data=new Date().toLocaleDateString();let p=analise.padrao;if(!banco[p])banco[p]=[];banco[p].push(analise);localStorage.setItem('lotofacilBanco',JSON.stringify(banco));montarMenuPrincipal();alert("Jogo Gerado Salvo!")}
+function proximo(){document.getElementById('de').value=parseInt(document.getElementById('de').value)+1;buscarIntervalo()}
+function anterior(){document.getElementById('de').value=parseInt(document.getElementById('de').value)-1;buscarIntervalo()}
+function contarIguais(a1,a2){return a1.filter(n=>a2.includes(n)).length}
+function buscarCombinacao(){alert("Função de busca em desenvolvimento")}
+function buscarInteligente(){alert("Busca Inteligente em desenvolvimento")}
+function abrirFaixa(f){alert("Abrir faixa: "+f)}
+function voltarMenuPrincipal(){document.getElementById('telaPasta').classList.add('oculto');document.getElementById('telaPesquisa').classList.remove('oculto')}
+window.onload=criarTabela;
+</script>
+</body>
+</html>
