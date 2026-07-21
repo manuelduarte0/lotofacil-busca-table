@@ -201,12 +201,14 @@ function carregarJogoNaTabela(jogo){
   voltarPesquisa();
   limparTabela();
   jogoAtual = jogo;
+  // CORREÇÃO: Se não tiver formulaZUD, calcula agora
+  if(!jogoAtual.formulaZUD) jogoAtual.formulaZUD = calcularZUD(jogo.dezenas);
   document.getElementById('de').value = jogo.concurso;
   document.getElementById('ate').value = jogo.concurso;
   document.getElementById('info').innerHTML = `
   <h2>Concurso ${jogo.concurso} - ${jogo.data}</h2>
   <p><b>Padrão:</b> ${jogo.padrao} | <b>Pares:</b> ${jogo.pares} | <b>Ímpares:</b> ${jogo.impares}</p>
-  <p class="formulaZUD"><b>Fórmula:</b> ${jogo.formulaZUD}</p>
+  <p class="formulaZUD"><b>Fórmula:</b> ${jogoAtual.formulaZUD}</p>
   `;
   jogo.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
 }
@@ -434,6 +436,9 @@ function abrirPastaPadrao(padrao){
   }
 
   jogosDoPadrao.forEach(j => {
+    // CORREÇÃO: Calcula a formula se não existir pra jogos antigos
+    if(!j.formulaZUD) j.formulaZUD = calcularZUD(j.dezenas);
+
     html += `
     <div class="jogoSalvo" onclick='carregarJogoNaTabela(${JSON.stringify(j)})'>
       <b>Concurso:</b> ${j.concurso} - ${j.data}<br>
