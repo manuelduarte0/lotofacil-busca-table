@@ -45,7 +45,7 @@ input{width:100px;padding:10px;border-radius:8px;border:2px solid #9200D6;backgr
 
 <div class="conteudo" id="telaPesquisa">
 <h1>🎯 Analisador Lotofácil PRO</h1>
-De: <input type="number" id="de"> Até: <input type="number" id="ate"><br>
+De: <input type="number" id="de" placeholder="3131"> Até: <input type="number" id="ate" placeholder="3131"><br>
 <button onclick="buscarIntervalo()">🔍 PESQUISAR</button><button onclick="ultimo()">ULTIMO</button>
 <button onclick="copiarNumeros()">📋 COPIAR</button><button onclick="salvarJogo()">💾 SALVAR</button><br>
 <button class="btnNav" onclick="anterior()">⬅ ANTERIOR</button><button class="btnNav" onclick="proximo()">PRÓXIMO ➡</button>
@@ -55,7 +55,13 @@ De: <input type="number" id="de"> Até: <input type="number" id="ate"><br>
 <div class="conteudo oculto" id="telaPasta">
 <button class="btnVoltarPasta" onclick="voltarMenuPrincipal()">⬅ VOLTAR PASTAS</button>
 <div class="boxBusca"><h3>🔍 BUSCAR COMBINAÇÃO</h3><input type="text" id="buscaCombo" class="inputBusca" placeholder="Ex: 1,2,3 ou 4.7.4"><br>
-<button onclick="buscarCombinacao()">BUSCAR</button><button class="btnInteligente" onclick="buscarInteligente()">🧠 INTELIGENTE</button></div>
+<button onclick="buscarCombinacao()">BUSCAR NA PASTA</button><button class="btnInteligente" onclick="buscarInteligente()">🧠 BUSCA INTELIGENTE</button></div>
+
+<div class="boxBusca"><h3>🎯 BUSCAR FÓRMULA 5x5</h3><input type="text" id="buscaFormula5x5" class="inputBusca" placeholder="Ex: 2.3.4.2.4"><br>
+<button class="btnFormula" onclick="buscarFormula5x5()">BUSCAR 5x5 NA PASTA</button><button class="btnFormula" onclick="buscarInteligente5x5()">🧠 BUSCA INTELIGENTE 5x5</button></div>
+
+<div class="boxBusca"><h3>🟣 BUSCAR FÓRMULA ZUD</h3><input type="text" id="buscaFormulaZUD" class="inputBusca" placeholder="Ex: Z 2-2 | U 3-4 | D 2-2"><br>
+<button class="btnFormulaZUD" onclick="buscarFormulaZUD()">BUSCAR ZUD NA PASTA</button><button class="btnFormulaZUD" onclick="buscarInteligenteZUD()">🧠 BUSCA INTELIGENTE ZUD</button></div>
 
 <div class="boxGerador"><h3>🎰 GERADOR INTELIGENTE</h3>
 <h4>🎯 5x5</h4><div id="lista5x5" class="listaOpcoes"></div>
@@ -66,45 +72,24 @@ De: <input type="number" id="de"> Até: <input type="number" id="ate"><br>
 <button class="btnGerador" onclick="gerarJogoInteligente()">GERAR JOGO</button>
 <div id="resultadoGerador"></div></div>
 
-<div id="resultadoBusca"></div><h3>📊 FREQUÊNCIA</h3><div class="freqTabela" id="tabelaFrequencia"></div><div id="areaPastas"></div></div>
+<div id="resultadoBusca"></div><h3>📊 FREQUÊNCIA DOS NÚMEROS</h3><div class="freqTabela" id="tabelaFrequencia"></div><div id="areaPastas"></div></div>
 
 <script>
 const API="https://loteriascaixa-api.herokuapp.com/api/lotofacil/";
-let jogoAtual={},banco=JSON.parse(localStorage.getItem('lotofacilBanco'))||{},pastaAberta="",faixaAberta="",filtro5x5=null,filtroZUD=null,filtroPI=null,numerosFixos=[],filtroSorteados=null;
+let jogoAtual={},banco=JSON.parse(localStorage.getItem('lotofacilBanco'))||{},pastaAberta="",faixaAberta="",filtro5x5=null,filtroZUD=null,filtroPI=null,numerosFixos=[];
 const padroesLista=['4.7.4','5.5.5','5.6.4','6.5.4','6.7.2','7.6.2','6.6.3','5.7.3','7.5.3','7.6.2','3.8.4','8.4.3'],opcoesPI=['6.9','7.8','8.7','9.6'];
 
 function gerarFaixas(){let f=['TODOS'];for(let i=3101;i<=4001;i+=100)f.push(i);return f}
 function criarTabela(){const t=document.getElementById('tabela');t.innerHTML="";for(let i=1;i<=25;i++){let n=i.toString().padStart(2,'0');t.innerHTML+=`<div class="numero" id="n${n}">${n}</div>`}montarMenuPrincipal();montarGridInserir();montarOpcoesGerador()}
 function montarGridInserir(){let h="";for(let i=1;i<=25;i++){let n=i.toString().padStart(2,'0');h+=`<div class="numero" id="ins${n}" onclick="toggleNumeroFixo('${n}')">${n}</div>`}document.getElementById('gridInserir').innerHTML=h}
 function toggleNumeroFixo(n){if(numerosFixos.includes(n)){numerosFixos=numerosFixos.filter(x=>x!=n);document.getElementById('ins'+n).classList.remove('numeroFixo')}else{if(numerosFixos.length>=7)return alert("Max 7 numeros");numerosFixos.push(n);document.getElementById('ins'+n).classList.add('numeroFixo')}}
-function limparInserir(){numerosFixos=[];document.querySelectorAll('#gridInserir.numero').forEach(e=>e.classList.remove('numeroFixo'))}
+function limparInserir(){numerosFixos=[];document.querySelectorAll('.numeroFixo').forEach(e=>e.classList.remove('numeroFixo'))}
 
-function montarOpcoesGerador(){
-let h5x5="",hZUD="",hPI="";
-padroesLista.forEach(p=>{h5x5+=`<button class="btnOpcao" id="btn5x5_${p}" onclick="setFiltro5x5('${p}')">${p}</button>`});
-padroesLista.forEach(p=>{hZUD+=`<button class="btnOpcao" id="btnZUD_${p}" onclick="setFiltroZUD('${p}')">${p}</button>`});
-opcoesPI.forEach(p=>{hPI+=`<button class="btnOpcao" id="btnPI_${p}" onclick="setFiltroPI('${p}')">${p}</button>`});
-document.getElementById('lista5x5').innerHTML=h5x5;document.getElementById('listaZUD').innerHTML=hZUD;document.getElementById('listaPI').innerHTML=hPI;
-}
-function setFiltro5x5(p){filtro5x5=filtro5x5==p?null:p;atualizarBotoes()}
-function setFiltroZUD(p){filtroZUD=filtroZUD==p?null:p;atualizarBotoes()}
-function setFiltroPI(p){filtroPI=filtroPI==p?null:p;atualizarBotoes()}
+function montarOpcoesGerador(){let h5x5="",hZUD="",hPI="";padroesLista.forEach(p=>{h5x5+=`<button class="btnOpcao" id="btn5x5_${p}" onclick="setFiltro5x5('${p}')">${p}</button>`});padroesLista.forEach(p=>{hZUD+=`<button class="btnOpcao" id="btnZUD_${p}" onclick="setFiltroZUD('${p}')">${p}</button>`});opcoesPI.forEach(p=>{hPI+=`<button class="btnOpcao" id="btnPI_${p}" onclick="setFiltroPI('${p}')">${p}</button>`});document.getElementById('lista5x5').innerHTML=h5x5;document.getElementById('listaZUD').innerHTML=hZUD;document.getElementById('listaPI').innerHTML=hPI;}
+function setFiltro5x5(p){filtro5x5=filtro5x5==p?null:p;atualizarBotoes()}function setFiltroZUD(p){filtroZUD=filtroZUD==p?null:p;atualizarBotoes()}function setFiltroPI(p){filtroPI=filtroPI==p?null:p;atualizarBotoes()}
 function atualizarBotoes(){document.querySelectorAll('.btnOpcao').forEach(b=>b.classList.remove('selecaoAtiva'));if(filtro5x5)document.getElementById('btn5x5_'+filtro5x5)?.classList.add('selecaoAtiva');if(filtroZUD)document.getElementById('btnZUD_'+filtroZUD)?.classList.add('selecaoAtiva');if(filtroPI)document.getElementById('btnPI_'+filtroPI)?.classList.add('selecaoAtiva')}
 
-function gerarJogoInteligente(){
-if(!filtro5x5&&!filtroZUD&&!filtroPI&&numerosFixos.length==0)return alert("Selecione pelo menos 1 filtro");
-let tentativas=0,jogo;
-while(tentativas<5000){
-jogo=gerarBase();
-if(numerosFixos.length>0){jogo=jogo.filter(n=>!numerosFixos.includes(n));jogo=[...numerosFixos,...jogo].slice(0,15)}
-jogo.sort((a,b)=>a-b);
-let p5x5=calcular5x5(jogo),pZUD=calcularPadraoZUD(jogo),pPI=`${jogo.filter(n=>n%2==0).length}.${jogo.filter(n=>n%2!=0).length}`;
-if((!filtro5x5||p5x5==filtro5x5)&&(!filtroZUD||pZUD==filtroZUD)&&(!filtroPI||pPI==filtroPI)){break}
-tentativas++
-}
-if(tentativas>=5000)return alert("Não achei combinação com esses filtros");
-mostrarGerado(jogo,p5x5,pZUD,pPI);
-}
+function gerarJogoInteligente(){if(!filtro5x5&&!filtroZUD&&!filtroPI&&numerosFixos.length==0)return alert("Selecione pelo menos 1 filtro");let tentativas=0,jogo;while(tentativas<5000){jogo=gerarBase();if(numerosFixos.length>0){jogo=jogo.filter(n=>!numerosFixos.includes(n));jogo=[...numerosFixos,...jogo].slice(0,15)}jogo.sort((a,b)=>a-b);let p5x5=calcular5x5(jogo),pZUD=calcularPadraoZUD(jogo),pPI=`${jogo.filter(n=>n%2==0).length}.${jogo.filter(n=>n%2!=0).length}`;if((!filtro5x5||p5x5==filtro5x5)&&(!filtroZUD||pZUD==filtroZUD)&&(!filtroPI||pPI==filtroPI)){break}tentativas++}if(tentativas>=5000)return alert("Não achei combinação com esses filtros");mostrarGerado(jogo,p5x5,pZUD,pPI);}
 function gerarBase(){let nums=[],pool=Array.from({length:25},(_,i)=>(i+1).toString().padStart(2,'0'));while(nums.length<15){let n=pool.splice(Math.floor(Math.random()*pool.length),1)[0];nums.push(n)}return nums}
 function mostrarGerado(j,p5,pz,ppi){let h=`<div class="resultadoGerado"><h3>🎯 JOGO GERADO</h3><p><b>Números:</b> ${j.join(", ")}</p><p class="formula5x5">5x5: ${p5}</p><p class="formulaZUD">ZUD: ${pz}</p><p>Par/Ímpar: ${ppi}</p><button onclick="copiarJogo('${j.join(", ")}')">📋 COPIAR</button><button onclick="salvarJogoGerado('${j.join(", ")}')">💾 SALVAR</button></div>`;document.getElementById('resultadoGerador').innerHTML=h}
 
@@ -115,20 +100,34 @@ function calcular5x5(d){return`${d.filter(n=>n>=1&&n<=5).length}.${d.filter(n=>n
 function calcularZUD(d){let z=d.filter(n=>n<=9),u=d.filter(n=>n>=10&&n<=19),d2=d.filter(n=>n>=20);return`Z ${z.filter(n=>n%2==0).length}-${z.length-z.filter(n=>n%2==0).length} | U ${u.filter(n=>n%2==0).length}-${u.length-u.filter(n=>n%2==0).length} | D ${d2.filter(n=>n%2==0).length}-${d2.length-d2.filter(n=>n%2==0).length}`}
 function calcularPadraoZUD(d){return`${d.filter(n=>n<=9).length}.${d.filter(n=>n>=10&&n<=19).length}.${d.filter(n=>n>=20).length}`}
 function analisarPadrao(d){return{padrao:calcularPadraoZUD(d),pares:d.filter(n=>n%2==0).length,impares:15-d.filter(n=>n%2==0).length,dezenas:d,formulaZUD:calcularZUD(d),formula5x5:calcular5x5(d)}}
+
 async function buscarIntervalo(){let d=document.getElementById('de').value,a=document.getElementById('ate').value;if(!d||!a)return alert("Preencha");let r=await fetch(API+d),data=await r.json();mostrar(data)}
 async function ultimo(){let r=await fetch(API+"latest"),data=await r.json();document.getElementById('de').value=data.concurso;document.getElementById('ate').value=data.concurso;mostrar(data)}
-function mostrar(d){document.querySelectorAll('.numero').forEach(e=>e.classList.remove('sorteado'));jogoAtual=analisarPadrao(d.dezenas.map(Number));jogoAtual.concurso=d.concurso;jogoAtual.data=d.data;document.getElementById('info').innerHTML=`<h2>Concurso ${d.concurso}</h2><p class="formula5x5">5x5: ${jogoAtual.formula5x5}</p><p class="formulaZUD">ZUD: ${jogoAtual.formulaZUD}</p>`;d.dezenas.forEach(n=>document.getElementById('n'+n).classList.add('sorteado'))}
-function copiarNumeros(){navigator.clipboard.writeText(jogoAtual.dezenas.join(", "));alert("Copiado!")}
+function mostrar(data){limparTabela();jogoAtual=analisarPadrao(data.dezenas.map(Number));jogoAtual.concurso=data.concurso;jogoAtual.data=data.data;document.getElementById('info').innerHTML=`<h2>Concurso ${data.concurso} - ${data.data}</h2><p><b>Padrão:</b> ${jogoAtual.padrao} | <b>Pares:</b> ${jogoAtual.pares} | <b>Ímpares:</b> ${jogoAtual.impares}</p><p class="formulaZUD"><b>Fórmula ZUD:</b> ${jogoAtual.formulaZUD}</p><p class="formula5x5"><b>Fórmula 5x5:</b> ${jogoAtual.formula5x5}</p>`;data.dezenas.forEach(n=>document.getElementById('n'+n).classList.add('sorteado'))}
+function limparTabela(){document.querySelectorAll('.numero').forEach(el=>el.classList.remove('sorteado'))}
+function copiarNumeros(){if(!jogoAtual.dezenas)return alert("Pesquise primeiro");navigator.clipboard.writeText(jogoAtual.dezenas.join(", "));alert("Copiado!")}
 function copiarJogo(j){navigator.clipboard.writeText(j);alert("Jogo copiado!")}
-function salvarJogo(){let p=jogoAtual.padrao;if(!banco[p])banco[p]=[];banco[p].push(jogoAtual);localStorage.setItem('lotofacilBanco',JSON.stringify(banco));montarMenuPrincipal();alert("Salvo!")}
+function salvarJogo(){if(!jogoAtual.dezenas)return alert("Pesquise um concurso primeiro");let pasta=jogoAtual.padrao;if(!banco[pasta])banco[pasta]=[];if(!banco[pasta].find(j=>j.concurso==jogoAtual.concurso)){banco[pasta].push(jogoAtual);localStorage.setItem('lotofacilBanco',JSON.stringify(banco));montarMenuPrincipal();alert(`Jogo salvo na pasta ${pasta}!`)}else{alert("Esse concurso já está salvo")}}
 function salvarJogoGerado(j){let nums=j.split(", ").map(Number);let analise=analisarPadrao(nums);analise.concurso="GERADO";analise.data=new Date().toLocaleDateString();let p=analise.padrao;if(!banco[p])banco[p]=[];banco[p].push(analise);localStorage.setItem('lotofacilBanco',JSON.stringify(banco));montarMenuPrincipal();alert("Jogo Gerado Salvo!")}
-function proximo(){document.getElementById('de').value=parseInt(document.getElementById('de').value)+1;buscarIntervalo()}
-function anterior(){document.getElementById('de').value=parseInt(document.getElementById('de').value)-1;buscarIntervalo()}
+function proximo(){let d=parseInt(document.getElementById('de').value);document.getElementById('de').value=d+1;document.getElementById('ate').value=d+1;buscarIntervalo()}
+function anterior(){let d=parseInt(document.getElementById('de').value);if(d<=1)return;document.getElementById('de').value=d-1;document.getElementById('ate').value=d-1;buscarIntervalo()}
 function contarIguais(a1,a2){return a1.filter(n=>a2.includes(n)).length}
-function buscarCombinacao(){alert("Função de busca em desenvolvimento")}
-function buscarInteligente(){alert("Busca Inteligente em desenvolvimento")}
-function abrirFaixa(f){alert("Abrir faixa: "+f)}
-function voltarMenuPrincipal(){document.getElementById('telaPasta').classList.add('oculto');document.getElementById('telaPesquisa').classList.remove('oculto')}
+
+function getJogosDaFaixa(faixa){let todos=[];if(faixa=='TODOS'){Object.values(banco).forEach(pasta=>todos.push(...pasta));return todos}let i=parseInt(faixa),fim=i+99;Object.values(banco).forEach(pasta=>{todos.push(...pasta.filter(j=>j.concurso>=i&&j.concurso<=fim))});return todos}
+function getJogosDoPadrao(padrao){let jogos=banco[padrao]?banco[padrao]:[];if(faixaAberta!='TODOS'){let i=parseInt(faixaAberta),fim=i+99;jogos=jogos.filter(j=>j.concurso>=i&&j.concurso<=fim)}return jogos}
+
+function abrirFaixa(faixa){faixaAberta=faixa;toggleMenu();document.getElementById('telaPesquisa').classList.add('oculto');document.getElementById('telaPasta').classList.remove('oculto');document.getElementById('resultadoBusca').innerHTML="";let jogosDaFaixa=getJogosDaFaixa(faixa);let titulo=faixa=='TODOS'?'TODOS OS CONCURSOS':`Concursos ${faixa} a ${parseInt(faixa)+99}`;let html=`<h2>📁 ${titulo}</h2><h3>Selecione o Padrão:</h3>`;padroesLista.forEach(padrao=>{let jogosDoPadrao=getJogosDoPadrao(padrao);if(jogosDoPadrao.length>0){html+=`<div class="pasta" onclick="abrirPastaPadrao('${padrao}')">${padrao} <span>${jogosDoPadrao.length} jogos</span></div>`}});if(jogosDaFaixa.length==0)html+="<p>Nenhum jogo salvo nessa faixa</p>";document.getElementById('areaPastas').innerHTML=html;calcularFrequencia(jogosDaFaixa)}
+
+function abrirPastaPadrao(padrao){pastaAberta=padrao;let jogos=getJogosDoPadrao(padrao);let titulo=faixaAberta=='TODOS'?'TODOS':`${faixaAberta} a ${parseInt(faixaAberta)+99}`;let html=`<button onclick="abrirFaixa('${faixaAberta}')">⬅ VOLTAR FAIXA</button><h2>📁 Padrão ${padrao} - Faixa ${titulo}</h2>`;jogos.forEach(j=>{if(!j.formulaZUD)j.formulaZUD=calcularZUD(j.dezenas);if(!j.formula5x5)j.formula5x5=calcular5x5(j.dezenas);html+=`<div class="jogoSalvo" onclick='carregarJogoNaTabela(${JSON.stringify(j)})'><b>Concurso:</b> ${j.concurso} - ${j.data}<br><b>Números:</b> ${j.dezenas.join(", ")}<br><b>Pares:</b> ${j.pares} | <b>Ímpares:</b> ${j.impares}<br><span class="formulaZUD"><b>ZUD:</b> ${j.formulaZUD}</span><br><span class="formula5x5"><b>5x5:</b> ${j.formula5x5}</span><br><button onclick="event.stopPropagation(); navigator.clipboard.writeText('${j.dezenas.join(", ")}')">📋 Copiar</button></div>`});document.getElementById('areaPastas').innerHTML=html;calcularFrequencia(jogos)}
+
+function carregarJogoNaTabela(jogo){voltarPesquisa();limparTabela();jogoAtual=jogo;if(!jogoAtual.formulaZUD)jogoAtual.formulaZUD=calcularZUD(jogo.dezenas);if(!jogoAtual.formula5x5)jogoAtual.formula5x5=calcular5x5(jogo.dezenas);document.getElementById('de').value=jogo.concurso;document.getElementById('ate').value=jogo.concurso;document.getElementById('info').innerHTML=`<h2>Concurso ${jogo.concurso} - ${jogo.data}</h2><p><b>Padrão:</b> ${jogo.padrao} | <b>Pares:</b> ${jogo.pares} | <b>Ímpares:</b> ${jogo.impares}</p><p class="formulaZUD"><b>Fórmula ZUD:</b> ${jogoAtual.formulaZUD}</p><p class="formula5x5"><b>Fórmula 5x5:</b> ${jogoAtual.formula5x5}</p>`;jogo.dezenas.forEach(n=>document.getElementById('n'+n).classList.add('sorteado'))}
+
+function calcularFrequencia(jogos){let freq={};for(let i=1;i<=25;i++)freq[i.toString().padStart(2,'0')]=0;jogos.forEach(j=>{j.dezenas.forEach(n=>freq[n]++)});let html="";for(let i=1;i<=25;i++){let num=i.toString().padStart(2,'0');html+=`<div class="freqItem"><div class="freqNum">${num}</div><div class="freqQtd">${freq[num]}x</div></div>`}document.getElementById('tabelaFrequencia').innerHTML=html}
+
+function buscarCombinacao(){alert("Busca em desenvolvimento")}function buscarInteligente(){alert("Busca Inteligente em desenvolvimento")}function buscarFormula5x5(){alert("Busca 5x5 em desenvolvimento")}function buscarInteligente5x5(){alert("Busca Inteligente 5x5 em desenvolvimento")}function buscarFormulaZUD(){alert("Busca ZUD em desenvolvimento")}function buscarInteligenteZUD(){alert("Busca Inteligente ZUD em desenvolvimento")}
+
+function voltarPesquisa(){document.getElementById('telaPasta').classList.add('oculto');document.getElementById('telaPesquisa').classList.remove('oculto')}
+function voltarMenuPrincipal(){document.getElementById('telaPasta').classList.add('oculto');document.getElementById('telaPesquisa').classList.remove('oculto');montarMenuPrincipal()}
 window.onload=criarTabela;
 </script>
 </body>
