@@ -43,6 +43,7 @@
 .resultadoInteligente { background:#111; border:2px solid #00BFFF; padding:10px; margin:8px 0; border-radius:8px; text-align:left; }
 .resultadoInteligente b { color:#00BFFF; }
 .formulaZUD { color:#00BFFF; font-weight:bold; font-size:15px; }
+.formula5x5 { color:#00FF7F; font-weight:bold; font-size:15px; }
 
 .oculto { display:none; }
 </style>
@@ -139,7 +140,16 @@ function contarJogosNaFaixa(faixa){
 
 function toggleMenu(){ document.getElementById('menuLateral').classList.toggle('ativo'); }
 
-// NOVA FUNÇÃO: Calcula Z-U-D
+// NOVA FUNÇÃO: Calcula 5x5
+function calcular5x5(dezenas){
+  let linha1 = dezenas.filter(n => parseInt(n) >= 1 && parseInt(n) <= 5).length;
+  let linha2 = dezenas.filter(n => parseInt(n) >= 6 && parseInt(n) <= 10).length;
+  let linha3 = dezenas.filter(n => parseInt(n) >= 11 && parseInt(n) <= 15).length;
+  let linha4 = dezenas.filter(n => parseInt(n) >= 16 && parseInt(n) <= 20).length;
+  let linha5 = dezenas.filter(n => parseInt(n) >= 21 && parseInt(n) <= 25).length;
+  return `${linha1}.${linha2}.${linha3}.${linha4}.${linha5}`;
+}
+
 function calcularZUD(dezenas){
   let z = dezenas.filter(n => parseInt(n) <= 9);
   let u = dezenas.filter(n => parseInt(n) >= 10 && parseInt(n) <= 19);
@@ -164,7 +174,8 @@ function analisarPadrao(dezenas){
   let pares = dezenas.filter(n => parseInt(n) % 2 == 0).length;
   let impares = 15 - pares;
   let formulaZUD = calcularZUD(dezenas);
-  return {padrao: `${g0}.${g1}.${g2}`, pares, impares, dezenas, formulaZUD};
+  let formula5x5 = calcular5x5(dezenas);
+  return {padrao: `${g0}.${g1}.${g2}`, pares, impares, dezenas, formulaZUD, formula5x5};
 }
 
 async function buscarIntervalo(){
@@ -192,7 +203,8 @@ function mostrar(data){
   document.getElementById('info').innerHTML = `
   <h2>Concurso ${data.concurso} - ${data.data}</h2>
   <p><b>Padrão:</b> ${jogoAtual.padrao} | <b>Pares:</b> ${jogoAtual.pares} | <b>Ímpares:</b> ${jogoAtual.impares}</p>
-  <p class="formulaZUD"><b>Fórmula:</b> ${jogoAtual.formulaZUD}</p>
+  <p class="formulaZUD"><b>Fórmula ZUD:</b> ${jogoAtual.formulaZUD}</p>
+  <p class="formula5x5"><b>Fórmula 5x5:</b> ${jogoAtual.formula5x5}</p>
   `;
   data.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
 }
@@ -201,14 +213,17 @@ function carregarJogoNaTabela(jogo){
   voltarPesquisa();
   limparTabela();
   jogoAtual = jogo;
-  // CORREÇÃO: Se não tiver formulaZUD, calcula agora
+  // CORREÇÃO: Se não tiver as formulas, calcula agora
   if(!jogoAtual.formulaZUD) jogoAtual.formulaZUD = calcularZUD(jogo.dezenas);
+  if(!jogoAtual.formula5x5) jogoAtual.formula5x5 = calcular5x5(jogo.dezenas);
+
   document.getElementById('de').value = jogo.concurso;
   document.getElementById('ate').value = jogo.concurso;
   document.getElementById('info').innerHTML = `
   <h2>Concurso ${jogo.concurso} - ${jogo.data}</h2>
   <p><b>Padrão:</b> ${jogo.padrao} | <b>Pares:</b> ${jogo.pares} | <b>Ímpares:</b> ${jogo.impares}</p>
-  <p class="formulaZUD"><b>Fórmula:</b> ${jogoAtual.formulaZUD}</p>
+  <p class="formulaZUD"><b>Fórmula ZUD:</b> ${jogoAtual.formulaZUD}</p>
+  <p class="formula5x5"><b>Fórmula 5x5:</b> ${jogoAtual.formula5x5}</p>
   `;
   jogo.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
 }
@@ -436,15 +451,17 @@ function abrirPastaPadrao(padrao){
   }
 
   jogosDoPadrao.forEach(j => {
-    // CORREÇÃO: Calcula a formula se não existir pra jogos antigos
+    // CORREÇÃO: Calcula as formulas se não existir pra jogos antigos
     if(!j.formulaZUD) j.formulaZUD = calcularZUD(j.dezenas);
+    if(!j.formula5x5) j.formula5x5 = calcular5x5(j.dezenas);
 
     html += `
     <div class="jogoSalvo" onclick='carregarJogoNaTabela(${JSON.stringify(j)})'>
       <b>Concurso:</b> ${j.concurso} - ${j.data}<br>
       <b>Números:</b> ${j.dezenas.join(", ")}<br>
       <b>Pares:</b> ${j.pares} | <b>Ímpares:</b> ${j.impares}<br>
-      <span class="formulaZUD"><b>Fórmula:</b> ${j.formulaZUD}</span><br>
+      <span class="formulaZUD"><b>ZUD:</b> ${j.formulaZUD}</span><br>
+      <span class="formula5x5"><b>5x5:</b> ${j.formula5x5}</span><br>
       <button onclick="event.stopPropagation(); navigator.clipboard.writeText('${j.dezenas.join(", ")}')">📋 Copiar</button>
       <button class="btnApagar" onclick="apagarJogo('${padrao}', ${j.concurso}, event)">🗑️ Apagar</button>
     </div>
