@@ -25,6 +25,7 @@
 .btnVoltarPasta { background:#555; }
 .btnInteligente { background:#00BFFF; }
 .btnFormula { background:#00FF7F; color:#000; }
+.btnFormulaZUD { background:#FF00FF; color:#000; }
 
 .tabela { display:grid; grid-template-columns: repeat(5, 1fr); gap:5px; max-width:300px; margin:20px auto; }
 .numero { width:100%; aspect-ratio:1/1; border:1px solid #444; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; background:#222; }
@@ -45,6 +46,8 @@
 .resultadoInteligente b { color:#00BFFF; }
 .resultadoFormula { background:#111; border:2px solid #00FF7F; padding:10px; margin:8px 0; border-radius:8px; text-align:left; }
 .resultadoFormula b { color:#00FF7F; }
+.resultadoFormulaZUD { background:#111; border:2px solid #FF00FF; padding:10px; margin:8px 0; border-radius:8px; text-align:left; }
+.resultadoFormulaZUD b { color:#FF00FF; }
 
 .formulaZUD { color:#00BFFF; font-weight:bold; font-size:15px; }
 .formula5x5 { color:#00FF7F; font-weight:bold; font-size:15px; }
@@ -94,6 +97,14 @@
   <br>
   <button class="btnFormula" onclick="buscarFormula5x5()">BUSCAR 5x5 NA PASTA</button>
   <button class="btnFormula" onclick="buscarInteligente5x5()">🧠 BUSCA INTELIGENTE 5x5</button>
+ </div>
+
+ <div class="boxBusca">
+  <h3>🟣 BUSCAR FÓRMULA ZUD</h3>
+  <input type="text" id="buscaFormulaZUD" class="inputBusca" placeholder="Ex: Z 2-2 | U 3-4 | D 2-2">
+  <br>
+  <button class="btnFormulaZUD" onclick="buscarFormulaZUD()">BUSCAR ZUD NA PASTA</button>
+  <button class="btnFormulaZUD" onclick="buscarInteligenteZUD()">🧠 BUSCA INTELIGENTE ZUD</button>
  </div>
 
  <div id="resultadoBusca"></div>
@@ -337,14 +348,12 @@ function buscarCombinacao(){
   document.getElementById('resultadoBusca').innerHTML = html;
 }
 
-// NOVA FUNÇÃO 1: BUSCAR PELA FÓRMULA 5x5 NA PASTA
 function buscarFormula5x5(){
   let texto = document.getElementById('buscaFormula5x5').value;
   if(!texto) return alert("Digite a fórmula 5x5. Ex: 2.3.4.2.4");
   let jogos = getJogosDoPadrao(pastaAberta);
   let html = `<h4>🎯 Resultado Busca 5x5: ${texto} no padrão ${pastaAberta}</h4>`;
   let encontrados = 0;
-
   jogos.forEach(j => {
     if(!j.formula5x5) j.formula5x5 = calcular5x5(j.dezenas);
     if(j.formula5x5 == texto){
@@ -352,24 +361,20 @@ function buscarFormula5x5(){
       html += `<div class="resultadoFormula"><b>Concurso ${j.concurso}</b> - ${j.data}<br><b>Números:</b> ${j.dezenas.join(", ")}<br><b>5x5:</b> ${j.formula5x5}</div>`;
     }
   });
-
   if(encontrados == 0) html += `<p>Nenhum jogo com a fórmula ${texto} encontrado</p>`;
   else html += `<p><b>Total encontrado:</b> ${encontrados} jogos</p>`;
   document.getElementById('resultadoBusca').innerHTML = html;
 }
 
-// NOVA FUNÇÃO 2: BUSCA INTELIGENTE DA FÓRMULA 5x5
 function buscarInteligente5x5(){
   let jogos = getJogosDoPadrao(pastaAberta);
   if(jogos.length < 3) return alert(`Precisa de no mínimo 3 jogos no padrão ${pastaAberta}`);
-
   let mapaFormulas = {};
   jogos.forEach(j => {
     if(!j.formula5x5) j.formula5x5 = calcular5x5(j.dezenas);
     if(!mapaFormulas[j.formula5x5]) mapaFormulas[j.formula5x5] = [];
     mapaFormulas[j.formula5x5].push({concurso: j.concurso, data: j.data, dezenas: j.dezenas});
   });
-
   let resultados = [];
   for(let formula in mapaFormulas){
     if(mapaFormulas[formula].length >= 3){
@@ -381,16 +386,70 @@ function buscarInteligente5x5(){
     }
   }
   resultados.sort((a,b) => b.qtd - a.qtd);
-
   let html = `<h4>🧠 BUSCA INTELIGENTE 5x5 - Padrão ${pastaAberta}</h4>`;
   html += `<p>Fórmulas 5x5 que se repetiram 3+ vezes</p>`;
-
   if(resultados.length == 0){
     html += `<p>Nenhuma fórmula 5x5 se repetiu 3 vezes no ${pastaAberta}</p>`;
   } else {
     resultados.slice(0, 20).forEach(r => {
       html += `<div class="resultadoFormula">
         <b>Fórmula 5x5:</b> ${r.formula}<br>
+        <b>Repetiu:</b> ${r.qtd} vezes<br>
+        <b>Concursos:</b> ${r.jogos.map(j=>j.concurso).join(', ')}
+      </div>`;
+    });
+  }
+  document.getElementById('resultadoBusca').innerHTML = html;
+}
+
+// NOVA FUNÇÃO 1: BUSCAR PELA FÓRMULA ZUD NA PASTA
+function buscarFormulaZUD(){
+  let texto = document.getElementById('buscaFormulaZUD').value;
+  if(!texto) return alert("Digite a fórmula ZUD. Ex: Z 2-2 | U 3-4 | D 2-2");
+  let jogos = getJogosDoPadrao(pastaAberta);
+  let html = `<h4>🟣 Resultado Busca ZUD: ${texto} no padrão ${pastaAberta}</h4>`;
+  let encontrados = 0;
+  jogos.forEach(j => {
+    if(!j.formulaZUD) j.formulaZUD = calcularZUD(j.dezenas);
+    if(j.formulaZUD == texto){
+      encontrados++;
+      html += `<div class="resultadoFormulaZUD"><b>Concurso ${j.concurso}</b> - ${j.data}<br><b>Números:</b> ${j.dezenas.join(", ")}<br><b>ZUD:</b> ${j.formulaZUD}</div>`;
+    }
+  });
+  if(encontrados == 0) html += `<p>Nenhum jogo com a fórmula ${texto} encontrado</p>`;
+  else html += `<p><b>Total encontrado:</b> ${encontrados} jogos</p>`;
+  document.getElementById('resultadoBusca').innerHTML = html;
+}
+
+// NOVA FUNÇÃO 2: BUSCA INTELIGENTE DA FÓRMULA ZUD
+function buscarInteligenteZUD(){
+  let jogos = getJogosDoPadrao(pastaAberta);
+  if(jogos.length < 3) return alert(`Precisa de no mínimo 3 jogos no padrão ${pastaAberta}`);
+  let mapaFormulas = {};
+  jogos.forEach(j => {
+    if(!j.formulaZUD) j.formulaZUD = calcularZUD(j.dezenas);
+    if(!mapaFormulas[j.formulaZUD]) mapaFormulas[j.formulaZUD] = [];
+    mapaFormulas[j.formulaZUD].push({concurso: j.concurso, data: j.data, dezenas: j.dezenas});
+  });
+  let resultados = [];
+  for(let formula in mapaFormulas){
+    if(mapaFormulas[formula].length >= 3){
+      resultados.push({
+        formula: formula,
+        qtd: mapaFormulas[formula].length,
+        jogos: mapaFormulas[formula].sort((a,b)=>a.concurso-b.concurso)
+      });
+    }
+  }
+  resultados.sort((a,b) => b.qtd - a.qtd);
+  let html = `<h4>🧠 BUSCA INTELIGENTE ZUD - Padrão ${pastaAberta}</h4>`;
+  html += `<p>Fórmulas ZUD que se repetiram 3+ vezes</p>`;
+  if(resultados.length == 0){
+    html += `<p>Nenhuma fórmula ZUD se repetiu 3 vezes no ${pastaAberta}</p>`;
+  } else {
+    resultados.slice(0, 20).forEach(r => {
+      html += `<div class="resultadoFormulaZUD">
+        <b>Fórmula ZUD:</b> ${r.formula}<br>
         <b>Repetiu:</b> ${r.qtd} vezes<br>
         <b>Concursos:</b> ${r.jogos.map(j=>j.concurso).join(', ')}
       </div>`;
