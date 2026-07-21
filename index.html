@@ -2,606 +2,134 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Analisador Lotofácil PRO</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Analisador Lotofácil PRO V3</title>
 <style>
- body { background:#0A0A0A; color:white; font-family:Arial; margin:0; padding:0; }
-.btnMenu { position:fixed; top:10px; left:10px; z-index:1000; font-size:28px; background:#9200D6; border:none; color:white; padding:8px 14px; border-radius:8px; cursor:pointer; }
-.menu { position:fixed; left:-220px; top:0; width:200px; height:100%; background:#111; padding:15px; border-right:2px solid #9200D6; transition:0.3s; z-index:999; overflow-y:auto; }
-.menu.ativo { left:0; }
-.menu h3 { color:#9200D6; text-align:center; }
-.pasta { padding:12px; margin:6px 0; background:#222; border-radius:8px; cursor:pointer; text-align:center; font-weight:bold; display:flex; justify-content:space-between; }
-.pasta:hover { background:#9200D6; }
-.pasta span { font-size:12px; color:#aaa; }
-.pastaMae { background:#9200D6; border:2px solid #00BFFF; }
-
-.conteudo { padding:60px 15px 15px 15px; text-align:center; }
- h1 { color:#9200D6; }
- input { width:100px; padding:10px; border-radius:8px; border:2px solid #9200D6; background:#222; color:white; text-align:center; margin:3px; }
-.inputBusca { width:300px; }
- button { padding:10px 15px; background:#9200D6; border:none; border-radius:10px; cursor:pointer; font-weight:bold; margin:5px; color:#fff; }
-.btnNav { background:#00BFFF; }
-.btnApagar { background:#ff0000; padding:5px 10px; font-size:12px; margin-top:5px; }
-.btnVoltarPasta { background:#555; }
-.btnInteligente { background:#00BFFF; }
-.btnFormula { background:#00FF7F; color:#000; }
-.btnFormulaZUD { background:#FF00FF; color:#000; }
-
-.tabela { display:grid; grid-template-columns: repeat(5, 1fr); gap:5px; max-width:300px; margin:20px auto; }
-.numero { width:100%; aspect-ratio:1/1; border:1px solid #444; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; background:#222; }
-.sorteado { background:#9200D6!important; }
-
-.jogoSalvo { background:#222; padding:12px; margin:10px auto; border-radius:10px; max-width:400px; text-align:left; border:1px solid #9200D6; cursor:pointer; transition:0.2s; }
-.jogoSalvo:hover { background:#333; border-color:#9200D6; }
-
-.alerta { background:#ff9800; color:#000; padding:10px; border-radius:10px; margin:10px auto; max-width:400px; text-align:left; font-weight:bold; font-size:14px; }
-.boxBusca { background:#222; padding:15px; border-radius:10px; margin:15px auto; max-width:400px; border:2px solid #00BFFF; }
-
-.freqTabela { display:grid; grid-template-columns: repeat(5, 1fr); gap:5px; max-width:400px; margin:15px auto; }
-.freqItem { background:#222; border:1px solid #9200D6; border-radius:8px; padding:8px 5px; }
-.freqNum { font-size:18px; font-weight:bold; color:#9200D6; }
-.freqQtd { font-size:14px; }
-
-.resultadoInteligente { background:#111; border:2px solid #00BFFF; padding:10px; margin:8px 0; border-radius:8px; text-align:left; }
-.resultadoInteligente b { color:#00BFFF; }
-.resultadoFormula { background:#111; border:2px solid #00FF7F; padding:10px; margin:8px 0; border-radius:8px; text-align:left; }
-.resultadoFormula b { color:#00FF7F; }
-.resultadoFormulaZUD { background:#111; border:2px solid #FF00FF; padding:10px; margin:8px 0; border-radius:8px; text-align:left; }
-.resultadoFormulaZUD b { color:#FF00FF; }
-
-.formulaZUD { color:#00BFFF; font-weight:bold; font-size:15px; }
-.formula5x5 { color:#00FF7F; font-weight:bold; font-size:15px; }
-
-.oculto { display:none; }
+body{background:#0A0A0A;color:white;font-family:Arial;margin:0;padding:0}
+.btnMenu{position:fixed;top:10px;left:10px;z-index:1000;font-size:28px;background:#9200D6;border:none;color:white;padding:8px 14px;border-radius:8px;cursor:pointer}
+.menu{position:fixed;left:-220px;top:0;width:200px;height:100%;background:#111;padding:15px;border-right:2px solid #9200D6;transition:.3s;z-index:999;overflow-y:auto}
+.menu.ativo{left:0}.menu h3{color:#9200D6;text-align:center}
+.pasta{padding:12px;margin:6px 0;background:#222;border-radius:8px;cursor:pointer;text-align:center;font-weight:bold;display:flex;justify-content:space-between}
+.pasta:hover{background:#9200D6}.pasta span{font-size:12px;color:#aaa}.pastaMae{background:#9200D6;border:2px solid #00BFFF}
+.conteudo{padding:60px 15px 15px 15px;text-align:center}h1{color:#9200D6}
+input{width:100px;padding:10px;border-radius:8px;border:2px solid #9200D6;background:#222;color:white;text-align:center;margin:3px}
+.inputBusca{width:300px}button{padding:10px 15px;background:#9200D6;border:none;border-radius:10px;cursor:pointer;font-weight:bold;margin:5px;color:#fff}
+.btnNav{background:#00BFFF}.btnApagar{background:red;padding:5px 10px;font-size:12px;margin-top:5px}
+.btnVoltarPasta{background:#555}.btnInteligente{background:#00BFFF}
+.btnFormula{background:#00FF7F;color:#000}.btnFormulaZUD{background:#FF00FF;color:#000}.btnGerador{background:#FFD700;color:#000}
+.tabela{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:300px;margin:20px auto}
+.numero{width:100%;aspect-ratio:1/1;border:1px solid #444;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;background:#222;cursor:pointer}
+.sorteado{background:#9200D6!important}.numeroFixo{background:#FFD700!important;color:#000!important}
+.jogoSalvo{background:#222;padding:12px;margin:10px auto;border-radius:10px;max-width:400px;text-align:left;border:1px solid #9200D6;cursor:pointer}
+.jogoSalvo:hover{background:#333}.alerta{background:#ff9800;color:#000;padding:10px;border-radius:10px;margin:10px auto;max-width:400px;text-align:left;font-weight:bold;font-size:14px}
+.boxBusca{background:#222;padding:15px;border-radius:10px;margin:15px auto;max-width:400px;border:2px solid #00BFFF}
+.boxGerador{background:#222;padding:15px;border-radius:10px;margin:15px auto;max-width:450px;border:3px solid #FFD700}
+.freqTabela{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:400px;margin:15px auto}
+.freqItem{background:#222;border:1px solid #9200D6;border-radius:8px;padding:8px 5px;text-align:center}
+.freqNum{font-size:18px;font-weight:bold;color:#9200D6}.freqQtd{font-size:14px}
+.resultadoInteligente{background:#111;border:2px solid #00BFFF;padding:10px;margin:8px 0;border-radius:8px;text-align:left}
+.resultadoFormula{background:#111;border:2px solid #00FF7F;padding:10px;margin:8px 0;border-radius:8px;text-align:left}
+.resultadoFormulaZUD{background:#111;border:2px solid #FF00FF;padding:10px;margin:8px 0;border-radius:8px;text-align:left}
+.resultadoGerado{background:#111;border:3px solid #FFD700;padding:12px;margin:10px 0;border-radius:10px;text-align:left}
+.formulaZUD{color:#00BFFF;font-weight:bold}.formula5x5{color:#00FF7F;font-weight:bold}
+.selecaoAtiva{background:#FFD700!important;color:#000!important;border-color:#FFD700!important}
+.listaOpcoes{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:10px 0}
+.btnOpcao{padding:8px 10px;background:#333;border:2px solid #555;border-radius:8px;cursor:pointer;font-size:12px}
+.gridNumeros{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:300px;margin:10px auto}
+.oculto{display:none}
 </style>
 </head>
 <body>
-
 <button class="btnMenu" onclick="toggleMenu()">☰</button>
-
-<div class="menu" id="menuLateral">
- <h3>📁 PASTAS</h3>
- <div id="listaPastas"></div>
-</div>
+<div class="menu" id="menuLateral"><h3>📁 PASTAS</h3><div id="listaPastas"></div></div>
 
 <div class="conteudo" id="telaPesquisa">
- <h1>🎯 Analisador Lotofácil PRO</h1>
- De: <input type="number" id="de" placeholder="3131">
- Até: <input type="number" id="ate" placeholder="3131">
- <br>
- <button onclick="buscarIntervalo()">🔍 PESQUISAR</button>
- <button onclick="ultimo()">ULTIMO</button>
- <button onclick="copiarNumeros()">📋 COPIAR</button>
- <button onclick="salvarJogo()">💾 SALVAR</button>
- <br>
- <button class="btnNav" onclick="anterior()">⬅ ANTERIOR</button>
- <button class="btnNav" onclick="proximo()">PRÓXIMO ➡</button>
- <div id="info"></div>
- <div class="tabela" id="tabela"></div>
+<h1>🎯 Analisador Lotofácil PRO</h1>
+De: <input type="number" id="de"> Até: <input type="number" id="ate"><br>
+<button onclick="buscarIntervalo()">🔍 PESQUISAR</button><button onclick="ultimo()">ULTIMO</button>
+<button onclick="copiarNumeros()">📋 COPIAR</button><button onclick="salvarJogo()">💾 SALVAR</button><br>
+<button class="btnNav" onclick="anterior()">⬅ ANTERIOR</button><button class="btnNav" onclick="proximo()">PRÓXIMO ➡</button>
+<div id="info"></div><div class="tabela" id="tabela"></div>
 </div>
 
 <div class="conteudo oculto" id="telaPasta">
- <button class="btnVoltarPasta" onclick="voltarMenuPrincipal()">⬅ VOLTAR PASTAS</button>
+<button class="btnVoltarPasta" onclick="voltarMenuPrincipal()">⬅ VOLTAR PASTAS</button>
+<div class="boxBusca"><h3>🔍 BUSCAR COMBINAÇÃO</h3><input type="text" id="buscaCombo" class="inputBusca" placeholder="Ex: 1,2,3 ou 4.7.4"><br>
+<button onclick="buscarCombinacao()">BUSCAR</button><button class="btnInteligente" onclick="buscarInteligente()">🧠 INTELIGENTE</button></div>
 
- <div class="boxBusca">
-  <h3>🔍 BUSCAR COMBINAÇÃO</h3>
-  <input type="text" id="buscaCombo" class="inputBusca" placeholder="Ex: 03,10,11,15,19,22">
-  <br>
-  <button onclick="buscarCombinacao()">BUSCAR NA PASTA</button>
-  <button class="btnInteligente" onclick="buscarInteligente()">🧠 BUSCA INTELIGENTE</button>
- </div>
+<div class="boxGerador"><h3>🎰 GERADOR INTELIGENTE</h3>
+<h4>🎯 5x5</h4><div id="lista5x5" class="listaOpcoes"></div>
+<h4>🟣 ZUD</h4><div id="listaZUD" class="listaOpcoes"></div>
+<h4>⚖️ Par/Ímpar</h4><div id="listaPI" class="listaOpcoes"></div>
+<h4>📌 ATÉ 7 NÚMEROS FIXOS</h4><div id="gridInserir" class="gridNumeros"></div>
+<button onclick="limparInserir()">LIMPAR FIXOS</button>
+<button class="btnGerador" onclick="gerarJogoInteligente()">GERAR JOGO</button>
+<div id="resultadoGerador"></div></div>
 
- <div class="boxBusca">
-  <h3>🎯 BUSCAR FÓRMULA 5x5</h3>
-  <input type="text" id="buscaFormula5x5" class="inputBusca" placeholder="Ex: 2.3.4.2.4">
-  <br>
-  <button class="btnFormula" onclick="buscarFormula5x5()">BUSCAR 5x5 NA PASTA</button>
-  <button class="btnFormula" onclick="buscarInteligente5x5()">🧠 BUSCA INTELIGENTE 5x5</button>
- </div>
-
- <div class="boxBusca">
-  <h3>🟣 BUSCAR FÓRMULA ZUD</h3>
-  <input type="text" id="buscaFormulaZUD" class="inputBusca" placeholder="Ex: Z 2-2 | U 3-4 | D 2-2">
-  <br>
-  <button class="btnFormulaZUD" onclick="buscarFormulaZUD()">BUSCAR ZUD NA PASTA</button>
-  <button class="btnFormulaZUD" onclick="buscarInteligenteZUD()">🧠 BUSCA INTELIGENTE ZUD</button>
- </div>
-
- <div id="resultadoBusca"></div>
-
- <h3>📊 FREQUÊNCIA DOS NÚMEROS</h3>
- <div class="freqTabela" id="tabelaFrequencia"></div>
-
- <div id="areaPastas"></div>
-</div>
+<div id="resultadoBusca"></div><h3>📊 FREQUÊNCIA</h3><div class="freqTabela" id="tabelaFrequencia"></div><div id="areaPastas"></div></div>
 
 <script>
-const API = "https://loteriascaixa-api.herokuapp.com/api/lotofacil/";
-let jogoAtual = {};
-let banco = JSON.parse(localStorage.getItem('lotofacilBanco')) || {};
-let pastaAberta = "";
-let faixaAberta = "";
-const padroesLista = ['4.7.4','5.5.5','5.6.4','6.5.4','6.7.2','7.6.2','6.6.3','5.7.3','7.5.3','7.6.2'];
+const API="https://loteriascaixa-api.herokuapp.com/api/lotofacil/";
+let jogoAtual={},banco=JSON.parse(localStorage.getItem('lotofacilBanco'))||{},pastaAberta="",faixaAberta="",filtro5x5=null,filtroZUD=null,filtroPI=null,numerosFixos=[],filtroSorteados=null;
+const padroesLista=['4.7.4','5.5.5','5.6.4','6.5.4','6.7.2','7.6.2','6.6.3','5.7.3','7.5.3','7.6.2','3.8.4','8.4.3'],opcoesPI=['6.9','7.8','8.7','9.6'];
 
-function gerarFaixas(){
-  let faixas = ['TODOS'];
-  for(let i = 3101; i <= 4001; i += 100){
-    faixas.push(i);
-  }
-  return faixas;
+function gerarFaixas(){let f=['TODOS'];for(let i=3101;i<=4001;i+=100)f.push(i);return f}
+function criarTabela(){const t=document.getElementById('tabela');t.innerHTML="";for(let i=1;i<=25;i++){let n=i.toString().padStart(2,'0');t.innerHTML+=`<div class="numero" id="n${n}">${n}</div>`}montarMenuPrincipal();montarGridInserir();montarOpcoesGerador()}
+function montarGridInserir(){let h="";for(let i=1;i<=25;i++){let n=i.toString().padStart(2,'0');h+=`<div class="numero" id="ins${n}" onclick="toggleNumeroFixo('${n}')">${n}</div>`}document.getElementById('gridInserir').innerHTML=h}
+function toggleNumeroFixo(n){if(numerosFixos.includes(n)){numerosFixos=numerosFixos.filter(x=>x!=n);document.getElementById('ins'+n).classList.remove('numeroFixo')}else{if(numerosFixos.length>=7)return alert("Max 7 numeros");numerosFixos.push(n);document.getElementById('ins'+n).classList.add('numeroFixo')}}
+function limparInserir(){numerosFixos=[];document.querySelectorAll('#gridInserir.numero').forEach(e=>e.classList.remove('numeroFixo'))}
+
+function montarOpcoesGerador(){
+let h5x5="",hZUD="",hPI="";
+padroesLista.forEach(p=>{h5x5+=`<button class="btnOpcao" id="btn5x5_${p}" onclick="setFiltro5x5('${p}')">${p}</button>`});
+padroesLista.forEach(p=>{hZUD+=`<button class="btnOpcao" id="btnZUD_${p}" onclick="setFiltroZUD('${p}')">${p}</button>`});
+opcoesPI.forEach(p=>{hPI+=`<button class="btnOpcao" id="btnPI_${p}" onclick="setFiltroPI('${p}')">${p}</button>`});
+document.getElementById('lista5x5').innerHTML=h5x5;document.getElementById('listaZUD').innerHTML=hZUD;document.getElementById('listaPI').innerHTML=hPI;
 }
+function setFiltro5x5(p){filtro5x5=filtro5x5==p?null:p;atualizarBotoes()}
+function setFiltroZUD(p){filtroZUD=filtroZUD==p?null:p;atualizarBotoes()}
+function setFiltroPI(p){filtroPI=filtroPI==p?null:p;atualizarBotoes()}
+function atualizarBotoes(){document.querySelectorAll('.btnOpcao').forEach(b=>b.classList.remove('selecaoAtiva'));if(filtro5x5)document.getElementById('btn5x5_'+filtro5x5)?.classList.add('selecaoAtiva');if(filtroZUD)document.getElementById('btnZUD_'+filtroZUD)?.classList.add('selecaoAtiva');if(filtroPI)document.getElementById('btnPI_'+filtroPI)?.classList.add('selecaoAtiva')}
 
-function criarTabela(){
-  const tabela = document.getElementById('tabela');
-  tabela.innerHTML = "";
-  for(let i = 1; i <= 25; i++){
-    let num = i.toString().padStart(2, '0');
-    tabela.innerHTML += `<div class="numero" id="n${num}">${num}</div>`;
-  }
-  montarMenuPrincipal();
+function gerarJogoInteligente(){
+if(!filtro5x5&&!filtroZUD&&!filtroPI&&numerosFixos.length==0)return alert("Selecione pelo menos 1 filtro");
+let tentativas=0,jogo;
+while(tentativas<5000){
+jogo=gerarBase();
+if(numerosFixos.length>0){jogo=jogo.filter(n=>!numerosFixos.includes(n));jogo=[...numerosFixos,...jogo].slice(0,15)}
+jogo.sort((a,b)=>a-b);
+let p5x5=calcular5x5(jogo),pZUD=calcularPadraoZUD(jogo),pPI=`${jogo.filter(n=>n%2==0).length}.${jogo.filter(n=>n%2!=0).length}`;
+if((!filtro5x5||p5x5==filtro5x5)&&(!filtroZUD||pZUD==filtroZUD)&&(!filtroPI||pPI==filtroPI)){break}
+tentativas++
 }
-
-function montarMenuPrincipal(){
-  let html = "";
-  let faixas = gerarFaixas();
-  faixas.forEach(f => {
-    let qtd = contarJogosNaFaixa(f);
-    html += `<div class="pasta pastaMae" onclick="abrirFaixa('${f}')">${f} <span>${qtd} jogos</span></div>`;
-  });
-  document.getElementById('listaPastas').innerHTML = html;
+if(tentativas>=5000)return alert("Não achei combinação com esses filtros");
+mostrarGerado(jogo,p5x5,pZUD,pPI);
 }
+function gerarBase(){let nums=[],pool=Array.from({length:25},(_,i)=>(i+1).toString().padStart(2,'0'));while(nums.length<15){let n=pool.splice(Math.floor(Math.random()*pool.length),1)[0];nums.push(n)}return nums}
+function mostrarGerado(j,p5,pz,ppi){let h=`<div class="resultadoGerado"><h3>🎯 JOGO GERADO</h3><p><b>Números:</b> ${j.join(", ")}</p><p class="formula5x5">5x5: ${p5}</p><p class="formulaZUD">ZUD: ${pz}</p><p>Par/Ímpar: ${ppi}</p><button onclick="copiarJogo('${j.join(", ")}')">📋 COPIAR</button><button onclick="salvarJogoGerado('${j.join(", ")}')">💾 SALVAR</button></div>`;document.getElementById('resultadoGerador').innerHTML=h}
 
-function contarJogosNaFaixa(faixa){
-  if(faixa == 'TODOS') return Object.values(banco).flat().length;
-  let inicio = parseInt(faixa);
-  let fim = inicio + 99;
-  let total = 0;
-  Object.values(banco).forEach(pasta => {
-    total += pasta.filter(j => j.concurso >= inicio && j.concurso <= fim).length;
-  });
-  return total;
-}
-
-function toggleMenu(){ document.getElementById('menuLateral').classList.toggle('ativo'); }
-
-function calcular5x5(dezenas){
-  let linha1 = dezenas.filter(n => parseInt(n) >= 1 && parseInt(n) <= 5).length;
-  let linha2 = dezenas.filter(n => parseInt(n) >= 6 && parseInt(n) <= 10).length;
-  let linha3 = dezenas.filter(n => parseInt(n) >= 11 && parseInt(n) <= 15).length;
-  let linha4 = dezenas.filter(n => parseInt(n) >= 16 && parseInt(n) <= 20).length;
-  let linha5 = dezenas.filter(n => parseInt(n) >= 21 && parseInt(n) <= 25).length;
-  return `${linha1}.${linha2}.${linha3}.${linha4}.${linha5}`;
-}
-
-function calcularZUD(dezenas){
-  let z = dezenas.filter(n => parseInt(n) <= 9);
-  let u = dezenas.filter(n => parseInt(n) >= 10 && parseInt(n) <= 19);
-  let d = dezenas.filter(n => parseInt(n) >= 20);
-  let zPar = z.filter(n => parseInt(n) % 2 == 0).length; let zImpar = z.length - zPar;
-  let uPar = u.filter(n => parseInt(n) % 2 == 0).length; let uImpar = u.length - uPar;
-  let dPar = d.filter(n => parseInt(n) % 2 == 0).length; let dImpar = d.length - dPar;
-  return `Z ${zPar}-${zImpar} | U ${uPar}-${uImpar} | D ${dPar}-${dImpar}`;
-}
-
-function analisarPadrao(dezenas){
-  let g0 = dezenas.filter(n => parseInt(n) <= 9).length;
-  let g1 = dezenas.filter(n => parseInt(n) >= 10 && parseInt(n) <= 19).length;
-  let g2 = dezenas.filter(n => parseInt(n) >= 20).length;
-  let pares = dezenas.filter(n => parseInt(n) % 2 == 0).length;
-  let impares = 15 - pares;
-  let formulaZUD = calcularZUD(dezenas);
-  let formula5x5 = calcular5x5(dezenas);
-  return {padrao: `${g0}.${g1}.${g2}`, pares, impares, dezenas, formulaZUD, formula5x5};
-}
-
-async function buscarIntervalo(){
-  let de = document.getElementById('de').value;
-  let ate = document.getElementById('ate').value;
-  if(!de ||!ate) return alert("Preencha DE e ATÉ");
-  let res = await fetch(API + de);
-  let data = await res.json();
-  mostrar(data);
-}
-
-async function ultimo(){
-  let res = await fetch(API + "latest");
-  let data = await res.json();
-  document.getElementById('de').value = data.concurso;
-  document.getElementById('ate').value = data.concurso;
-  mostrar(data);
-}
-
-function mostrar(data){
-  limparTabela();
-  jogoAtual = analisarPadrao(data.dezenas);
-  jogoAtual.concurso = data.concurso;
-  jogoAtual.data = data.data;
-  document.getElementById('info').innerHTML = `
-  <h2>Concurso ${data.concurso} - ${data.data}</h2>
-  <p><b>Padrão:</b> ${jogoAtual.padrao} | <b>Pares:</b> ${jogoAtual.pares} | <b>Ímpares:</b> ${jogoAtual.impares}</p>
-  <p class="formulaZUD"><b>Fórmula ZUD:</b> ${jogoAtual.formulaZUD}</p>
-  <p class="formula5x5"><b>Fórmula 5x5:</b> ${jogoAtual.formula5x5}</p>
-  `;
-  data.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
-}
-
-function carregarJogoNaTabela(jogo){
-  voltarPesquisa();
-  limparTabela();
-  jogoAtual = jogo;
-  if(!jogoAtual.formulaZUD) jogoAtual.formulaZUD = calcularZUD(jogo.dezenas);
-  if(!jogoAtual.formula5x5) jogoAtual.formula5x5 = calcular5x5(jogo.dezenas);
-  document.getElementById('de').value = jogo.concurso;
-  document.getElementById('ate').value = jogo.concurso;
-  document.getElementById('info').innerHTML = `
-  <h2>Concurso ${jogo.concurso} - ${jogo.data}</h2>
-  <p><b>Padrão:</b> ${jogo.padrao} | <b>Pares:</b> ${jogo.pares} | <b>Ímpares:</b> ${jogo.impares}</p>
-  <p class="formulaZUD"><b>Fórmula ZUD:</b> ${jogoAtual.formulaZUD}</p>
-  <p class="formula5x5"><b>Fórmula 5x5:</b> ${jogoAtual.formula5x5}</p>
-  `;
-  jogo.dezenas.forEach(n => document.getElementById('n' + n).classList.add('sorteado'));
-}
-
-function limparTabela(){ document.querySelectorAll('.numero').forEach(el => el.classList.remove('sorteado')); }
-
-function copiarNumeros(){
-  if(!jogoAtual.dezenas) return alert("Pesquise primeiro");
-  navigator.clipboard.writeText(jogoAtual.dezenas.join(", "));
-  alert("Copiado!");
-}
-
-function salvarJogo(){
-  if(!jogoAtual.dezenas) return alert("Pesquise um concurso primeiro");
-  let pasta = jogoAtual.padrao;
-  if(!banco[pasta]) banco[pasta] = [];
-  if(!banco[pasta].find(j => j.concurso == jogoAtual.concurso)){
-    banco[pasta].push(jogoAtual);
-    localStorage.setItem('lotofacilBanco', JSON.stringify(banco));
-    montarMenuPrincipal();
-    alert(`Jogo salvo na pasta ${pasta}!`);
-  } else { alert("Esse concurso já está salvo"); }
-}
-
-function proximo(){
-  let de = parseInt(document.getElementById('de').value);
-  let ate = parseInt(document.getElementById('ate').value);
-  if(!de) return;
-  document.getElementById('de').value = de + 1;
-  document.getElementById('ate').value = ate + 1;
-  buscarIntervalo();
-}
-
-function anterior(){
-  let de = parseInt(document.getElementById('de').value);
-  let ate = parseInt(document.getElementById('ate').value);
-  if(!de || de <= 1) return;
-  document.getElementById('de').value = de - 1;
-  document.getElementById('ate').value = ate - 1;
-  buscarIntervalo();
-}
-
-function apagarJogo(padrao, concurso, event){
-  event.stopPropagation();
-  if(confirm(`Apagar concurso ${concurso} da pasta ${padrao}?`)){
-    banco[padrao] = banco[padrao].filter(j => j.concurso!= concurso);
-    localStorage.setItem('lotofacilBanco', JSON.stringify(banco));
-    montarMenuPrincipal();
-    abrirFaixa(faixaAberta);
-  }
-}
-
-function contarIguais(arr1, arr2){
-  return arr1.filter(n => arr2.includes(n)).length;
-}
-
-function verificarDuplicidade(jogos){
-  let alertas = [];
-  for(let i=0; i<jogos.length; i++){
-    for(let j=i+1; j<jogos.length; j++){
-      let iguais = contarIguais(jogos[i].dezenas, jogos[j].dezenas);
-      if(iguais >= 10){
-        alertas.push(`⚠️ <b>2 Jogos:</b> ${jogos[i].concurso} vs ${jogos[j].concurso} = ${iguais} iguais`);
-      }
-    }
-  }
-  for(let i=0; i<jogos.length; i++){
-    for(let j=i+1; j<jogos.length; j++){
-      for(let k=j+1; k<jogos.length; k++){
-        let grupo3 = [jogos[i], jogos[j], jogos[k]];
-        let numsComuns = grupo3[0].dezenas.filter(n =>
-          grupo3[1].dezenas.includes(n) && grupo3[2].dezenas.includes(n)
-        );
-        if(numsComuns.length >= 5){
-          alertas.push(`🔥 <b>3 Jogos:</b> ${grupo3.map(g=>g.concurso).join(', ')} = ${numsComuns.length} iguais: ${numsComuns.join(', ')}`);
-        }
-      }
-    }
-  }
-  return alertas.slice(0, 10);
-}
-
-function calcularFrequencia(jogos){
-  let freq = {};
-  for(let i=1; i<=25; i++) freq[i.toString().padStart(2,'0')] = 0;
-  jogos.forEach(j => { j.dezenas.forEach(n => freq[n]++); });
-  let html = "";
-  for(let i=1; i<=25; i++){
-    let num = i.toString().padStart(2,'0');
-    html += `<div class="freqItem"><div class="freqNum">${num}</div><div class="freqQtd">${freq[num]}x</div></div>`;
-  }
-  document.getElementById('tabelaFrequencia').innerHTML = html;
-}
-
-function buscarCombinacao(){
-  let texto = document.getElementById('buscaCombo').value;
-  if(!texto) return alert("Digite os números");
-  let combo = texto.split(',').map(n => n.trim().padStart(2,'0'));
-  let jogos = getJogosDoPadrao(pastaAberta);
-  let html = `<h4>Resultado da busca no padrão ${pastaAberta}:</h4>`;
-  jogos.forEach(j => {
-    let acertos = contarIguais(combo, j.dezenas);
-    if(acertos > 0){
-      html += `<p><b>Concurso ${j.concurso}:</b> ${acertos} acertos</p>`;
-    }
-  });
-  if(html == `<h4>Resultado da busca no padrão ${pastaAberta}:</h4>`) html += `<p>Nenhum jogo bateu</p>`;
-  document.getElementById('resultadoBusca').innerHTML = html;
-}
-
-function buscarFormula5x5(){
-  let texto = document.getElementById('buscaFormula5x5').value;
-  if(!texto) return alert("Digite a fórmula 5x5. Ex: 2.3.4.2.4");
-  let jogos = getJogosDoPadrao(pastaAberta);
-  let html = `<h4>🎯 Resultado Busca 5x5: ${texto} no padrão ${pastaAberta}</h4>`;
-  let encontrados = 0;
-  jogos.forEach(j => {
-    if(!j.formula5x5) j.formula5x5 = calcular5x5(j.dezenas);
-    if(j.formula5x5 == texto){
-      encontrados++;
-      html += `<div class="resultadoFormula"><b>Concurso ${j.concurso}</b> - ${j.data}<br><b>Números:</b> ${j.dezenas.join(", ")}<br><b>5x5:</b> ${j.formula5x5}</div>`;
-    }
-  });
-  if(encontrados == 0) html += `<p>Nenhum jogo com a fórmula ${texto} encontrado</p>`;
-  else html += `<p><b>Total encontrado:</b> ${encontrados} jogos</p>`;
-  document.getElementById('resultadoBusca').innerHTML = html;
-}
-
-function buscarInteligente5x5(){
-  let jogos = getJogosDoPadrao(pastaAberta);
-  if(jogos.length < 3) return alert(`Precisa de no mínimo 3 jogos no padrão ${pastaAberta}`);
-  let mapaFormulas = {};
-  jogos.forEach(j => {
-    if(!j.formula5x5) j.formula5x5 = calcular5x5(j.dezenas);
-    if(!mapaFormulas[j.formula5x5]) mapaFormulas[j.formula5x5] = [];
-    mapaFormulas[j.formula5x5].push({concurso: j.concurso, data: j.data, dezenas: j.dezenas});
-  });
-  let resultados = [];
-  for(let formula in mapaFormulas){
-    if(mapaFormulas[formula].length >= 3){
-      resultados.push({
-        formula: formula,
-        qtd: mapaFormulas[formula].length,
-        jogos: mapaFormulas[formula].sort((a,b)=>a.concurso-b.concurso)
-      });
-    }
-  }
-  resultados.sort((a,b) => b.qtd - a.qtd);
-  let html = `<h4>🧠 BUSCA INTELIGENTE 5x5 - Padrão ${pastaAberta}</h4>`;
-  html += `<p>Fórmulas 5x5 que se repetiram 3+ vezes</p>`;
-  if(resultados.length == 0){
-    html += `<p>Nenhuma fórmula 5x5 se repetiu 3 vezes no ${pastaAberta}</p>`;
-  } else {
-    resultados.slice(0, 20).forEach(r => {
-      html += `<div class="resultadoFormula">
-        <b>Fórmula 5x5:</b> ${r.formula}<br>
-        <b>Repetiu:</b> ${r.qtd} vezes<br>
-        <b>Concursos:</b> ${r.jogos.map(j=>j.concurso).join(', ')}
-      </div>`;
-    });
-  }
-  document.getElementById('resultadoBusca').innerHTML = html;
-}
-
-// NOVA FUNÇÃO 1: BUSCAR PELA FÓRMULA ZUD NA PASTA
-function buscarFormulaZUD(){
-  let texto = document.getElementById('buscaFormulaZUD').value;
-  if(!texto) return alert("Digite a fórmula ZUD. Ex: Z 2-2 | U 3-4 | D 2-2");
-  let jogos = getJogosDoPadrao(pastaAberta);
-  let html = `<h4>🟣 Resultado Busca ZUD: ${texto} no padrão ${pastaAberta}</h4>`;
-  let encontrados = 0;
-  jogos.forEach(j => {
-    if(!j.formulaZUD) j.formulaZUD = calcularZUD(j.dezenas);
-    if(j.formulaZUD == texto){
-      encontrados++;
-      html += `<div class="resultadoFormulaZUD"><b>Concurso ${j.concurso}</b> - ${j.data}<br><b>Números:</b> ${j.dezenas.join(", ")}<br><b>ZUD:</b> ${j.formulaZUD}</div>`;
-    }
-  });
-  if(encontrados == 0) html += `<p>Nenhum jogo com a fórmula ${texto} encontrado</p>`;
-  else html += `<p><b>Total encontrado:</b> ${encontrados} jogos</p>`;
-  document.getElementById('resultadoBusca').innerHTML = html;
-}
-
-// NOVA FUNÇÃO 2: BUSCA INTELIGENTE DA FÓRMULA ZUD
-function buscarInteligenteZUD(){
-  let jogos = getJogosDoPadrao(pastaAberta);
-  if(jogos.length < 3) return alert(`Precisa de no mínimo 3 jogos no padrão ${pastaAberta}`);
-  let mapaFormulas = {};
-  jogos.forEach(j => {
-    if(!j.formulaZUD) j.formulaZUD = calcularZUD(j.dezenas);
-    if(!mapaFormulas[j.formulaZUD]) mapaFormulas[j.formulaZUD] = [];
-    mapaFormulas[j.formulaZUD].push({concurso: j.concurso, data: j.data, dezenas: j.dezenas});
-  });
-  let resultados = [];
-  for(let formula in mapaFormulas){
-    if(mapaFormulas[formula].length >= 3){
-      resultados.push({
-        formula: formula,
-        qtd: mapaFormulas[formula].length,
-        jogos: mapaFormulas[formula].sort((a,b)=>a.concurso-b.concurso)
-      });
-    }
-  }
-  resultados.sort((a,b) => b.qtd - a.qtd);
-  let html = `<h4>🧠 BUSCA INTELIGENTE ZUD - Padrão ${pastaAberta}</h4>`;
-  html += `<p>Fórmulas ZUD que se repetiram 3+ vezes</p>`;
-  if(resultados.length == 0){
-    html += `<p>Nenhuma fórmula ZUD se repetiu 3 vezes no ${pastaAberta}</p>`;
-  } else {
-    resultados.slice(0, 20).forEach(r => {
-      html += `<div class="resultadoFormulaZUD">
-        <b>Fórmula ZUD:</b> ${r.formula}<br>
-        <b>Repetiu:</b> ${r.qtd} vezes<br>
-        <b>Concursos:</b> ${r.jogos.map(j=>j.concurso).join(', ')}
-      </div>`;
-    });
-  }
-  document.getElementById('resultadoBusca').innerHTML = html;
-}
-
-function gerarCombinacoes(arr, tamanho){
-  let resultado = [];
-  function combinar(inicio, comboAtual){
-    if(comboAtual.length == tamanho){
-      resultado.push([...comboAtual]);
-      return;
-    }
-    for(let i = inicio; i < arr.length; i++){
-      comboAtual.push(arr[i]);
-      combinar(i + 1, comboAtual);
-      comboAtual.pop();
-    }
-  }
-  combinar(0, []);
-  return resultado;
-}
-
-function buscarInteligente(){
-  if(!pastaAberta) return alert("Abra um padrão primeiro");
-  let jogos = getJogosDoPadrao(pastaAberta);
-  if(jogos.length < 3) return alert(`Precisa de no mínimo 3 jogos no padrão ${pastaAberta}`);
-  let mapaCombinacoes = {};
-  jogos.forEach(jogo => {
-    let dezenas = jogo.dezenas.sort((a,b) => parseInt(a) - parseInt(b));
-    for(let tamanho = 5; tamanho <= 15; tamanho++){
-      gerarCombinacoes(dezenas, tamanho).forEach(combo => {
-        let chave = combo.join(',');
-        if(!mapaCombinacoes[chave]) mapaCombinacoes[chave] = [];
-        mapaCombinacoes[chave].push(jogo.concurso);
-      });
-    }
-  });
-  let resultados = [];
-  for(let chave in mapaCombinacoes){
-    if(mapaCombinacoes[chave].length >= 3){
-      resultados.push({
-        combo: chave.split(','),
-        qtd: mapaCombinacoes[chave].length,
-        tamanho: chave.split(',').length,
-        concursos: [...new Set(mapaCombinacoes[chave])].sort((a,b)=>a-b)
-      });
-    }
-  }
-  resultados.sort((a,b) => b.tamanho - a.tamanho || b.qtd - a.qtd);
-  let html = `<h4>🧠 BUSCA INTELIGENTE - Padrão ${pastaAberta}</h4>`;
-  html += `<p>Sequências de 5 a 15 números que saíram em 3+ jogos desse grupo</p>`;
-  if(resultados.length == 0){
-    html += `<p>Nenhuma sequência se repetiu 3 vezes no ${pastaAberta}</p>`;
-  } else {
-    resultados.slice(0, 30).forEach(r => {
-      html += `<div class="resultadoInteligente">
-        <b>Sequência ${r.tamanho} números:</b> ${r.combo.join(', ')}<br>
-        <b>Repetiu:</b> ${r.qtd} vezes<br>
-        <b>Concursos:</b> ${r.concursos.join(', ')}
-      </div>`;
-    });
-  }
-  document.getElementById('resultadoBusca').innerHTML = html;
-}
-
-function getJogosDaFaixa(faixa){
-  let todosJogos = [];
-  if(faixa == 'TODOS'){
-    Object.values(banco).forEach(pasta => todosJogos.push(...pasta));
-    return todosJogos;
-  }
-  let inicio = parseInt(faixa);
-  let fim = inicio + 99;
-  Object.values(banco).forEach(pasta => {
-    todosJogos.push(...pasta.filter(j => j.concurso >= inicio && j.concurso <= fim));
-  });
-  return todosJogos;
-}
-
-function getJogosDoPadrao(padrao){
-  let jogosDoPadrao = banco[padrao]? banco[padrao].filter(j => {
-    if(faixaAberta == 'TODOS') return true;
-    return j.concurso >= parseInt(faixaAberta) && j.concurso <= parseInt(faixaAberta)+99;
-  }) : [];
-  return jogosDoPadrao;
-}
-
-function abrirFaixa(faixa){
-  faixaAberta = faixa;
-  toggleMenu();
-  document.getElementById('telaPesquisa').classList.add('oculto');
-  document.getElementById('telaPasta').classList.remove('oculto');
-  document.getElementById('resultadoBusca').innerHTML = "";
-  let jogosDaFaixa = getJogosDaFaixa(faixa);
-  let tituloFaixa = faixa == 'TODOS'? 'TODOS OS CONCURSOS' : `Concursos ${faixa} a ${parseInt(faixa)+99}`;
-  let html = `<h2>📁 ${tituloFaixa}</h2><h3>Selecione o Padrão:</h3>`;
-  padroesLista.forEach(padrao => {
-    let jogosDoPadrao = getJogosDoPadrao(padrao);
-    if(jogosDoPadrao.length > 0){
-      html += `<div class="pasta" onclick="abrirPastaPadrao('${padrao}')">${padrao} <span>${jogosDoPadrao.length} jogos</span></div>`;
-    }
-  });
-  if(jogosDaFaixa.length == 0) html += "<p>Nenhum jogo salvo nessa faixa</p>";
-  document.getElementById('areaPastas').innerHTML = html;
-  calcularFrequencia(jogosDaFaixa);
-}
-
-function abrirPastaPadrao(padrao){
-  pastaAberta = padrao;
-  let jogosDoPadrao = getJogosDoPadrao(padrao);
-  let tituloFaixa = faixaAberta == 'TODOS'? 'TODOS' : `${faixaAberta} a ${parseInt(faixaAberta)+99}`;
-  let html = `<button onclick="abrirFaixa('${faixaAberta}')">⬅ VOLTAR FAIXA</button>`;
-  html += `<h2>📁 Padrão ${padrao} - Faixa ${tituloFaixa}</h2>`;
-  let duplicatas = verificarDuplicidade(jogosDoPadrao);
-  if(duplicatas.length > 0){
-    html += `<div class="alerta"><b>🔍 ALERTA DE SIMILARIDADE:</b><br>${duplicatas.join('<br>')}</div>`;
-  }
-  jogosDoPadrao.forEach(j => {
-    if(!j.formulaZUD) j.formulaZUD = calcularZUD(j.dezenas);
-    if(!j.formula5x5) j.formula5x5 = calcular5x5(j.dezenas);
-    html += `
-    <div class="jogoSalvo" onclick='carregarJogoNaTabela(${JSON.stringify(j)})'>
-      <b>Concurso:</b> ${j.concurso} - ${j.data}<br>
-      <b>Números:</b> ${j.dezenas.join(", ")}<br>
-      <b>Pares:</b> ${j.pares} | <b>Ímpares:</b> ${j.impares}<br>
-      <span class="formulaZUD"><b>ZUD:</b> ${j.formulaZUD}</span><br>
-      <span class="formula5x5"><b>5x5:</b> ${j.formula5x5}</span><br>
-      <button onclick="event.stopPropagation(); navigator.clipboard.writeText('${j.dezenas.join(", ")}')">📋 Copiar</button>
-      <button class="btnApagar" onclick="apagarJogo('${padrao}', ${j.concurso}, event)">🗑️ Apagar</button>
-    </div>
-    `;
-  });
-  document.getElementById('areaPastas').innerHTML = html;
-  calcularFrequencia(jogosDoPadrao);
-}
-
-function voltarPesquisa(){
-  document.getElementById('telaPasta').classList.add('oculto');
-  document.getElementById('telaPesquisa').classList.remove('oculto');
-}
-
-function voltarMenuPrincipal(){
-  document.getElementById('telaPasta').classList.add('oculto');
-  document.getElementById('telaPesquisa').classList.remove('oculto');
-  montarMenuPrincipal();
-}
-
-criarTabela();
+function montarMenuPrincipal(){let h="";gerarFaixas().forEach(f=>{let q=contarJogosNaFaixa(f);h+=`<div class="pasta pastaMae" onclick="abrirFaixa('${f}')">${f} <span>${q} jogos</span></div>`});document.getElementById('listaPastas').innerHTML=h}
+function contarJogosNaFaixa(f){if(f=='TODOS')return Object.values(banco).flat().length;let i=parseInt(f),fim=i+99,t=0;Object.values(banco).forEach(p=>{t+=p.filter(j=>j.concurso>=i&&j.concurso<=fim).length});return t}
+function toggleMenu(){document.getElementById('menuLateral').classList.toggle('ativo')}
+function calcular5x5(d){return`${d.filter(n=>n>=1&&n<=5).length}.${d.filter(n=>n>=6&&n<=10).length}.${d.filter(n=>n>=11&&n<=15).length}.${d.filter(n=>n>=16&&n<=20).length}.${d.filter(n=>n>=21&&n<=25).length}`}
+function calcularZUD(d){let z=d.filter(n=>n<=9),u=d.filter(n=>n>=10&&n<=19),d2=d.filter(n=>n>=20);return`Z ${z.filter(n=>n%2==0).length}-${z.length-z.filter(n=>n%2==0).length} | U ${u.filter(n=>n%2==0).length}-${u.length-u.filter(n=>n%2==0).length} | D ${d2.filter(n=>n%2==0).length}-${d2.length-d2.filter(n=>n%2==0).length}`}
+function calcularPadraoZUD(d){return`${d.filter(n=>n<=9).length}.${d.filter(n=>n>=10&&n<=19).length}.${d.filter(n=>n>=20).length}`}
+function analisarPadrao(d){return{padrao:calcularPadraoZUD(d),pares:d.filter(n=>n%2==0).length,impares:15-d.filter(n=>n%2==0).length,dezenas:d,formulaZUD:calcularZUD(d),formula5x5:calcular5x5(d)}}
+async function buscarIntervalo(){let d=document.getElementById('de').value,a=document.getElementById('ate').value;if(!d||!a)return alert("Preencha");let r=await fetch(API+d),data=await r.json();mostrar(data)}
+async function ultimo(){let r=await fetch(API+"latest"),data=await r.json();document.getElementById('de').value=data.concurso;document.getElementById('ate').value=data.concurso;mostrar(data)}
+function mostrar(d){document.querySelectorAll('.numero').forEach(e=>e.classList.remove('sorteado'));jogoAtual=analisarPadrao(d.dezenas.map(Number));jogoAtual.concurso=d.concurso;jogoAtual.data=d.data;document.getElementById('info').innerHTML=`<h2>Concurso ${d.concurso}</h2><p class="formula5x5">5x5: ${jogoAtual.formula5x5}</p><p class="formulaZUD">ZUD: ${jogoAtual.formulaZUD}</p>`;d.dezenas.forEach(n=>document.getElementById('n'+n).classList.add('sorteado'))}
+function copiarNumeros(){navigator.clipboard.writeText(jogoAtual.dezenas.join(", "));alert("Copiado!")}
+function copiarJogo(j){navigator.clipboard.writeText(j);alert("Jogo copiado!")}
+function salvarJogo(){let p=jogoAtual.padrao;if(!banco[p])banco[p]=[];banco[p].push(jogoAtual);localStorage.setItem('lotofacilBanco',JSON.stringify(banco));montarMenuPrincipal();alert("Salvo!")}
+function salvarJogoGerado(j){let nums=j.split(", ").map(Number);let analise=analisarPadrao(nums);analise.concurso="GERADO";analise.data=new Date().toLocaleDateString();let p=analise.padrao;if(!banco[p])banco[p]=[];banco[p].push(analise);localStorage.setItem('lotofacilBanco',JSON.stringify(banco));montarMenuPrincipal();alert("Jogo Gerado Salvo!")}
+function proximo(){document.getElementById('de').value=parseInt(document.getElementById('de').value)+1;buscarIntervalo()}
+function anterior(){document.getElementById('de').value=parseInt(document.getElementById('de').value)-1;buscarIntervalo()}
+function contarIguais(a1,a2){return a1.filter(n=>a2.includes(n)).length}
+function buscarCombinacao(){alert("Função de busca em desenvolvimento")}
+function buscarInteligente(){alert("Busca Inteligente em desenvolvimento")}
+function abrirFaixa(f){alert("Abrir faixa: "+f)}
+function voltarMenuPrincipal(){document.getElementById('telaPasta').classList.add('oculto');document.getElementById('telaPesquisa').classList.remove('oculto')}
+window.onload=criarTabela;
 </script>
-
 </body>
 </html>
